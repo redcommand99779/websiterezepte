@@ -4,5 +4,6 @@
   { "titel": "Zimtschnecken", "kategorie": "Backen", "bild": "bilder/zimtschnecken.svg", "pdf": "pdfs/zimtschnecken.pdf" },
   { "titel": "Gemüsecurry", "kategorie": "Kochen", "bild": "bilder/gemuesecurry.svg", "pdf": "pdfs/gemuesecurry.pdf" },
   { "titel": "Schokoladenkuchen", "kategorie": "Backen", "bild": "bilder/schokoladenkuchen.svg", "pdf": "pdfs/schokoladenkuchen.pdf" },
-  { "titel": "Kürbissuppe", "kategorie": "Kochen", "bild": "bilder/kuerbissuppe.svg", "pdf": "pdfs/kuerbissuppe.pdf" }
+  { "titel": "Kürbissuppe", "kategorie": "Kochen", "bild": "bilder/kuerbissuppe.svg", "pdf": "pdfs/kuerbissuppe.pdf" },
+  { "titel": "Panna-Cotta-Tarte", "kategorie": "Backen", "bild": "bilder/panna-cotta-tarte.svg", "pdf": "pdfs/panna-cotta-tarte.pdf" }
 ]
