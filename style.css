@@ -1,19 +1,4 @@
 :root {
-  --bg: #FAF6EF;
-  --text: #2B2420;
-  --karte-bg: #FFFDF8;
-  --linie: #C9BBA3;
-  --backen: #D9A62E;
-  --kochen: #6B8F71;
-  --font-headline: "Fraunces", serif;
-  --font-body: "Inter", sans-serif;
-  --karte-glow: none;
-  --headline-glow: none;
-  --headline-transform: none;
-  --headline-spacing: normal;
-}
-
-:root[data-theme="gaming"] {
   --bg: #0a0c16;
   --text: #E8E9FF;
   --karte-bg: #12152a;
@@ -57,22 +42,6 @@ header h1 {
   letter-spacing: var(--headline-spacing);
 }
 
-.theme-toggle {
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  background: transparent;
-  border: 1px solid var(--linie);
-  color: var(--text);
-  padding: 0.4rem 0.85rem;
-  border-radius: 999px;
-  cursor: pointer;
-  margin-bottom: 1rem;
-}
-
-.theme-toggle:hover {
-  border-color: var(--text);
-}
-
 header p {
   margin: 0;
   color: var(--text);
@@ -108,9 +77,6 @@ header p {
   background: var(--text);
   color: var(--bg);
   border-color: var(--text);
-}
-
-:root[data-theme="gaming"] .filter-tab.aktiv {
   box-shadow: 0 0 14px rgba(0, 240, 255, 0.5);
 }
 
@@ -143,10 +109,6 @@ main {
 
 .karte:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(43, 36, 32, 0.08);
-}
-
-:root[data-theme="gaming"] .karte:hover {
   box-shadow: var(--karte-glow);
   border-color: var(--kochen);
 }
@@ -183,26 +145,17 @@ main {
   height: 9px;
   border-radius: 50%;
   display: inline-block;
-}
-
-:root[data-theme="gaming"] .punkt {
   box-shadow: 0 0 6px currentColor;
-}
-
-:root[data-theme="gaming"] .punkt.backen {
-  color: var(--backen);
-}
-
-:root[data-theme="gaming"] .punkt.kochen {
-  color: var(--kochen);
 }
 
 .punkt.backen {
   background: var(--backen);
+  color: var(--backen);
 }
 
 .punkt.kochen {
   background: var(--kochen);
+  color: var(--kochen);
 }
 
 .karte-buttons {
@@ -224,10 +177,6 @@ main {
 }
 
 .button:hover {
-  border-color: var(--text);
-}
-
-:root[data-theme="gaming"] .button:hover {
   border-color: var(--kochen);
   box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
 }

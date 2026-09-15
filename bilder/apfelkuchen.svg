@@ -1,5 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320">
-  <rect width="480" height="320" fill="#D9A62E" opacity="0.25"/>
-  <rect x="0" y="0" width="480" height="320" fill="none" stroke="#D9A62E" stroke-width="6"/>
-  <text x="240" y="168" font-family="Georgia, serif" font-size="28" fill="#2B2420" text-anchor="middle">Apfelkuchen</text>
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="480" height="320" fill="#12152a"/>
+  <rect x="3" y="3" width="474" height="314" fill="none" stroke="#ff2ea6" stroke-width="3" filter="url(#glow)"/>
+  <text x="240" y="168" font-family="'Rajdhani', Arial, sans-serif" font-size="28" font-weight="600" letter-spacing="1" fill="#ff2ea6" text-anchor="middle" filter="url(#glow)">Apfelkuchen</text>
 </svg>
