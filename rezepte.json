@@ -1,0 +1,8 @@
+[
+  { "titel": "Apfelkuchen", "kategorie": "Backen", "bild": "bilder/apfelkuchen.svg", "pdf": "pdfs/apfelkuchen.pdf" },
+  { "titel": "Linsensuppe", "kategorie": "Kochen", "bild": "bilder/linsensuppe.svg", "pdf": "pdfs/linsensuppe.pdf" },
+  { "titel": "Zimtschnecken", "kategorie": "Backen", "bild": "bilder/zimtschnecken.svg", "pdf": "pdfs/zimtschnecken.pdf" },
+  { "titel": "Gemüsecurry", "kategorie": "Kochen", "bild": "bilder/gemuesecurry.svg", "pdf": "pdfs/gemuesecurry.pdf" },
+  { "titel": "Schokoladenkuchen", "kategorie": "Backen", "bild": "bilder/schokoladenkuchen.svg", "pdf": "pdfs/schokoladenkuchen.pdf" },
+  { "titel": "Kürbissuppe", "kategorie": "Kochen", "bild": "bilder/kuerbissuppe.svg", "pdf": "pdfs/kuerbissuppe.pdf" }
+]

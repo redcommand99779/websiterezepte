@@ -1,0 +1,174 @@
+:root {
+  --bg: #FAF6EF;
+  --text: #2B2420;
+  --karte-bg: #FFFDF8;
+  --linie: #C9BBA3;
+  --backen: #D9A62E;
+  --kochen: #6B8F71;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", sans-serif;
+  line-height: 1.5;
+}
+
+header {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 1.5rem;
+}
+
+header h1 {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 2.75rem;
+  margin: 0 0 0.5rem;
+}
+
+header p {
+  margin: 0;
+  color: var(--text);
+  opacity: 0.75;
+  font-size: 1.05rem;
+}
+
+.filterleiste {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 1.5rem 2rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-tab {
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  background: transparent;
+  border: 1px solid var(--linie);
+  color: var(--text);
+  padding: 0.5rem 1.1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.filter-tab:hover {
+  border-color: var(--text);
+}
+
+.filter-tab.aktiv {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+
+.filter-tab:focus-visible,
+.button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.karte {
+  background: var(--karte-bg);
+  border: 1px solid var(--linie);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.karte:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(43, 36, 32, 0.08);
+}
+
+.karte img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+  border-bottom: 1px solid var(--linie);
+}
+
+.karte-inhalt {
+  padding: 1.1rem 1.2rem 1.3rem;
+}
+
+.karte h2 {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 1.3rem;
+  margin: 0 0 0.5rem;
+}
+
+.kategorie-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.punkt {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.punkt.backen {
+  background: var(--backen);
+}
+
+.punkt.kochen {
+  background: var(--kochen);
+}
+
+.karte-buttons {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.button {
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--linie);
+  border-radius: 6px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+}
+
+.button:hover {
+  border-color: var(--text);
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  header h1 {
+    font-size: 2.2rem;
+  }
+}

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meine Rezepte</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Meine Rezepte</h1>
+    <p>Eine kleine Sammlung von Gerichten, die bei uns immer wieder auf den Tisch kommen.</p>
+  </header>
+
+  <nav class="filterleiste" aria-label="Rezepte filtern">
+    <button class="filter-tab aktiv" data-filter="Alle">Alle</button>
+    <button class="filter-tab" data-filter="Kochen">Kochen</button>
+    <button class="filter-tab" data-filter="Backen">Backen</button>
+  </nav>
+
+  <main>
+    <div class="grid" id="rezepte-grid"></div>
+  </main>
+
+  <script>
+    let alleRezepte = [];
+    let aktiverFilter = "Alle";
+
+    async function ladeRezepte() {
+      const antwort = await fetch("rezepte.json");
+      alleRezepte = await antwort.json();
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById("rezepte-grid");
+      const rezepte = aktiverFilter === "Alle"
+        ? alleRezepte
+        : alleRezepte.filter(r => r.kategorie === aktiverFilter);
+
+      grid.innerHTML = rezepte.map(rezeptKarte).join("");
+    }
+
+    function rezeptKarte(rezept) {
+      const kategorieKlasse = rezept.kategorie === "Backen" ? "backen" : "kochen";
+      const dateiname = rezept.pdf.split("/").pop();
+
+      return `
+        <article class="karte">
+          <img src="${rezept.bild}" alt="${rezept.titel}" loading="lazy">
+          <div class="karte-inhalt">
+            <h2>${rezept.titel}</h2>
+            <span class="kategorie-label">
+              <span class="punkt ${kategorieKlasse}"></span>
+              ${rezept.kategorie}
+            </span>
+            <div class="karte-buttons">
+              <a class="button" href="${rezept.pdf}" target="_blank" rel="noopener">Ansehen</a>
+              <a class="button" href="${rezept.pdf}" download="${dateiname}">Herunterladen</a>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    document.querySelectorAll(".filter-tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelector(".filter-tab.aktiv").classList.remove("aktiv");
+        tab.classList.add("aktiv");
+        aktiverFilter = tab.dataset.filter;
+        renderGrid();
+      });
+    });
+
+    ladeRezepte();
+  </script>
+</body>
+</html>

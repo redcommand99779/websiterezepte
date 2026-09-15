@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320">
+  <rect width="480" height="320" fill="#D9A62E" opacity="0.25"/>
+  <rect x="0" y="0" width="480" height="320" fill="none" stroke="#D9A62E" stroke-width="6"/>
+  <text x="240" y="168" font-family="Georgia, serif" font-size="28" fill="#2B2420" text-anchor="middle">Zimtschnecken</text>
+</svg>
