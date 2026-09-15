@@ -100,6 +100,25 @@ main {
   gap: 1.5rem;
 }
 
+.ueber-uns {
+  background: var(--karte-bg);
+  border: 1px solid var(--linie);
+  border-radius: 10px;
+  padding: 1.5rem 1.75rem;
+}
+
+.ueber-uns h2 {
+  font-family: var(--font-headline);
+  font-weight: 600;
+  font-size: 1.5rem;
+  margin: 0 0 0.6rem;
+}
+
+.ueber-uns p {
+  margin: 0;
+  opacity: 0.85;
+}
+
 .karte {
   background: var(--karte-bg);
   border: 1px solid var(--linie);
