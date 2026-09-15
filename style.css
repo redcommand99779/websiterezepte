@@ -201,6 +201,47 @@ main {
   box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
 }
 
+.admin-toggle {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  background: var(--karte-bg);
+  border: 1px solid var(--linie);
+  color: var(--text);
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+  opacity: 0.45;
+  transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-toggle:hover,
+.admin-toggle:focus-visible {
+  opacity: 1;
+  border-color: var(--kochen);
+}
+
+.admin-badge {
+  display: none;
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background: var(--karte-bg);
+  border: 1px solid var(--backen);
+  color: var(--backen);
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  box-shadow: 0 0 12px rgba(255, 46, 166, 0.4);
+}
+
+:root[data-admin] .admin-badge {
+  display: inline-block;
+}
+
 @media (max-width: 600px) {
   .grid {
     grid-template-columns: 1fr;

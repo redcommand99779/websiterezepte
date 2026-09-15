@@ -30,3 +30,21 @@ async function ladeUndRenderRezepte(kategorieFilter) {
   const grid = document.getElementById("rezepte-grid");
   grid.innerHTML = rezepte.map(rezeptKarte).join("");
 }
+
+function adminModusInitialisieren() {
+  const knopf = document.getElementById("admin-toggle");
+  if (!knopf) return;
+
+  function anwenden(aktiv) {
+    document.documentElement.toggleAttribute("data-admin", aktiv);
+    knopf.textContent = aktiv ? "🔧 Admin-Modus: AN" : "🔧 Admin-Modus";
+    knopf.setAttribute("aria-pressed", String(aktiv));
+    localStorage.setItem("adminModus", aktiv ? "1" : "0");
+  }
+
+  anwenden(localStorage.getItem("adminModus") === "1");
+
+  knopf.addEventListener("click", () => {
+    anwenden(!document.documentElement.hasAttribute("data-admin"));
+  });
+}
