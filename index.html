@@ -6,11 +6,20 @@
   <title>Meine Rezepte</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500&family=Orbitron:wght@600;700&family=Rajdhani:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script>
+    (function () {
+      var gespeichertesTheme = localStorage.getItem("theme");
+      if (gespeichertesTheme === "gaming") {
+        document.documentElement.setAttribute("data-theme", "gaming");
+      }
+    })();
+  </script>
 </head>
 <body>
   <header>
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">🎮 Gaming-Modus</button>
     <h1>Meine Rezepte</h1>
     <p>Eine kleine Sammlung von Gerichten, die bei uns immer wieder auf den Tisch kommen.</p>
   </header>
@@ -73,6 +82,28 @@
         aktiverFilter = tab.dataset.filter;
         renderGrid();
       });
+    });
+
+    const themeToggle = document.getElementById("theme-toggle");
+
+    function themeAnwenden(theme) {
+      if (theme === "gaming") {
+        document.documentElement.setAttribute("data-theme", "gaming");
+        themeToggle.textContent = "🍰 Klassischer Modus";
+        themeToggle.setAttribute("aria-pressed", "true");
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+        themeToggle.textContent = "🎮 Gaming-Modus";
+        themeToggle.setAttribute("aria-pressed", "false");
+      }
+      localStorage.setItem("theme", theme);
+    }
+
+    themeAnwenden(localStorage.getItem("theme") === "gaming" ? "gaming" : "klassisch");
+
+    themeToggle.addEventListener("click", () => {
+      const aktuell = document.documentElement.getAttribute("data-theme") === "gaming" ? "gaming" : "klassisch";
+      themeAnwenden(aktuell === "gaming" ? "klassisch" : "gaming");
     });
 
     ladeRezepte();

@@ -5,6 +5,27 @@
   --linie: #C9BBA3;
   --backen: #D9A62E;
   --kochen: #6B8F71;
+  --font-headline: "Fraunces", serif;
+  --font-body: "Inter", sans-serif;
+  --karte-glow: none;
+  --headline-glow: none;
+  --headline-transform: none;
+  --headline-spacing: normal;
+}
+
+:root[data-theme="gaming"] {
+  --bg: #0a0c16;
+  --text: #E8E9FF;
+  --karte-bg: #12152a;
+  --linie: #2c3157;
+  --backen: #ff2ea6;
+  --kochen: #00f0ff;
+  --font-headline: "Orbitron", sans-serif;
+  --font-body: "Rajdhani", sans-serif;
+  --karte-glow: 0 0 22px rgba(0, 240, 255, 0.25);
+  --headline-glow: 0 0 14px rgba(0, 240, 255, 0.55);
+  --headline-transform: uppercase;
+  --headline-spacing: 0.04em;
 }
 
 * {
@@ -15,8 +36,9 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-body);
   line-height: 1.5;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 header {
@@ -26,10 +48,29 @@ header {
 }
 
 header h1 {
-  font-family: "Fraunces", serif;
+  font-family: var(--font-headline);
   font-weight: 600;
   font-size: 2.75rem;
   margin: 0 0 0.5rem;
+  text-shadow: var(--headline-glow);
+  text-transform: var(--headline-transform);
+  letter-spacing: var(--headline-spacing);
+}
+
+.theme-toggle {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  background: transparent;
+  border: 1px solid var(--linie);
+  color: var(--text);
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.theme-toggle:hover {
+  border-color: var(--text);
 }
 
 header p {
@@ -48,7 +89,7 @@ header p {
 }
 
 .filter-tab {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-body);
   font-size: 0.95rem;
   background: transparent;
   border: 1px solid var(--linie);
@@ -56,6 +97,7 @@ header p {
   padding: 0.5rem 1.1rem;
   border-radius: 6px;
   cursor: pointer;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 .filter-tab:hover {
@@ -66,6 +108,10 @@ header p {
   background: var(--text);
   color: var(--bg);
   border-color: var(--text);
+}
+
+:root[data-theme="gaming"] .filter-tab.aktiv {
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.5);
 }
 
 .filter-tab:focus-visible,
@@ -92,12 +138,17 @@ main {
   border: 1px solid var(--linie);
   border-radius: 10px;
   overflow: hidden;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 .karte:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 16px rgba(43, 36, 32, 0.08);
+}
+
+:root[data-theme="gaming"] .karte:hover {
+  box-shadow: var(--karte-glow);
+  border-color: var(--kochen);
 }
 
 .karte img {
@@ -113,7 +164,7 @@ main {
 }
 
 .karte h2 {
-  font-family: "Fraunces", serif;
+  font-family: var(--font-headline);
   font-weight: 600;
   font-size: 1.3rem;
   margin: 0 0 0.5rem;
@@ -134,6 +185,18 @@ main {
   display: inline-block;
 }
 
+:root[data-theme="gaming"] .punkt {
+  box-shadow: 0 0 6px currentColor;
+}
+
+:root[data-theme="gaming"] .punkt.backen {
+  color: var(--backen);
+}
+
+:root[data-theme="gaming"] .punkt.kochen {
+  color: var(--kochen);
+}
+
 .punkt.backen {
   background: var(--backen);
 }
@@ -148,7 +211,7 @@ main {
 }
 
 .button {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-body);
   font-size: 0.9rem;
   text-decoration: none;
   color: var(--text);
@@ -157,10 +220,16 @@ main {
   border-radius: 6px;
   padding: 0.5rem 0.9rem;
   cursor: pointer;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 .button:hover {
   border-color: var(--text);
+}
+
+:root[data-theme="gaming"] .button:hover {
+  border-color: var(--kochen);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
 }
 
 @media (max-width: 600px) {
