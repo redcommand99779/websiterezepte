@@ -20,15 +20,34 @@ function rezeptKarte(rezept) {
   `;
 }
 
-async function ladeUndRenderRezepte(kategorieFilter) {
-  const antwort = await fetch("rezepte.json");
-  const alleRezepte = await antwort.json();
-  const rezepte = kategorieFilter
-    ? alleRezepte.filter(r => r.kategorie === kategorieFilter)
-    : alleRezepte;
+let alleRezepteGlobal = [];
+let aktuellerKategorieFilter = null;
 
+function gridRendern(suchbegriff) {
   const grid = document.getElementById("rezepte-grid");
+  const suche = (suchbegriff || "").trim().toLowerCase();
+
+  const rezepte = alleRezepteGlobal.filter(r => {
+    const passtKategorie = !aktuellerKategorieFilter || r.kategorie === aktuellerKategorieFilter;
+    const passtSuche = !suche || r.titel.toLowerCase().includes(suche);
+    return passtKategorie && passtSuche;
+  });
+
   grid.innerHTML = rezepte.map(rezeptKarte).join("");
+}
+
+async function ladeUndRenderRezepte(kategorieFilter) {
+  aktuellerKategorieFilter = kategorieFilter || null;
+  const antwort = await fetch("rezepte.json");
+  alleRezepteGlobal = await antwort.json();
+  gridRendern();
+}
+
+function sucheInitialisieren() {
+  const feld = document.getElementById("suche");
+  if (!feld) return;
+
+  feld.addEventListener("input", () => gridRendern(feld.value));
 }
 
 function adminModusInitialisieren() {

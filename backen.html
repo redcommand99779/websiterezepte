@@ -22,6 +22,7 @@
   </nav>
 
   <main>
+    <input type="search" id="suche" class="suche-feld" placeholder="Rezept suchen…" aria-label="Rezept suchen">
     <div class="grid" id="rezepte-grid"></div>
   </main>
 
@@ -31,6 +32,7 @@
   <script src="app.js"></script>
   <script>
     ladeUndRenderRezepte("Backen");
+    sucheInitialisieren();
     adminModusInitialisieren();
   </script>
 </body>

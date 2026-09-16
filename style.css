@@ -52,33 +52,37 @@ header p {
 .site-nav {
   max-width: 960px;
   margin: 0 auto;
-  padding: 0 1.5rem 2rem;
+  padding: 0 1.5rem 2.5rem;
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .nav-tab {
-  font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-family: var(--font-headline);
+  font-weight: 600;
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
   text-decoration: none;
   background: transparent;
   border: 1px solid var(--linie);
   color: var(--text);
-  padding: 0.5rem 1.1rem;
-  border-radius: 6px;
+  padding: 0.85rem 2rem;
+  border-radius: 8px;
   cursor: pointer;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 
 .nav-tab:hover {
   border-color: var(--text);
+  transform: translateY(-2px);
 }
 
 .nav-tab.aktiv {
   background: var(--text);
   color: var(--bg);
   border-color: var(--text);
-  box-shadow: 0 0 14px rgba(0, 240, 255, 0.5);
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.55);
 }
 
 .nav-tab:focus-visible,
@@ -92,6 +96,31 @@ main {
   max-width: 960px;
   margin: 0 auto;
   padding: 0 1.5rem 4rem;
+}
+
+.suche-feld {
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 0 1.75rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  background: var(--karte-bg);
+  border: 1px solid var(--linie);
+  color: var(--text);
+  padding: 0.65rem 1.1rem;
+  border-radius: 8px;
+}
+
+.suche-feld::placeholder {
+  color: var(--text);
+  opacity: 0.5;
+}
+
+.suche-feld:focus-visible {
+  outline: 2px solid var(--kochen);
+  outline-offset: 2px;
+  border-color: var(--kochen);
 }
 
 .grid {
