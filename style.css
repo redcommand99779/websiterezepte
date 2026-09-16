@@ -19,7 +19,13 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  background:
+    radial-gradient(circle at 15% 0%, rgba(0, 240, 255, 0.08), transparent 45%),
+    radial-gradient(circle at 85% 20%, rgba(255, 46, 166, 0.07), transparent 45%),
+    repeating-linear-gradient(0deg, rgba(232, 233, 255, 0.035) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(90deg, rgba(232, 233, 255, 0.035) 0 1px, transparent 1px 48px),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-body);
   line-height: 1.5;
@@ -27,16 +33,16 @@ body {
 }
 
 header {
-  max-width: 960px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 3rem 1.5rem 1.5rem;
+  padding: 4.5rem 2.5rem 2rem;
 }
 
 header h1 {
   font-family: var(--font-headline);
   font-weight: 600;
-  font-size: 2.75rem;
-  margin: 0 0 0.5rem;
+  font-size: 3.25rem;
+  margin: 0 0 0.85rem;
   text-shadow: var(--headline-glow);
   text-transform: var(--headline-transform);
   letter-spacing: var(--headline-spacing);
@@ -46,15 +52,15 @@ header p {
   margin: 0;
   color: var(--text);
   opacity: 0.75;
-  font-size: 1.05rem;
+  font-size: 1.15rem;
 }
 
 .site-nav {
-  max-width: 960px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 1.5rem 2.5rem;
+  padding: 0 2.5rem 3rem;
   display: flex;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .nav-tab {
@@ -93,16 +99,16 @@ a:focus-visible {
 }
 
 main {
-  max-width: 960px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 1.5rem 4rem;
+  padding: 0 2.5rem 6rem;
 }
 
 .suche-feld {
   display: block;
   width: 100%;
-  max-width: 340px;
-  margin: 0 0 1.75rem;
+  max-width: 380px;
+  margin: 0 0 2.25rem;
   font-family: var(--font-body);
   font-size: 1rem;
   background: var(--karte-bg);
@@ -125,15 +131,16 @@ main {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
 }
 
 .ueber-uns {
   background: var(--karte-bg);
   border: 1px solid var(--linie);
   border-radius: 10px;
-  padding: 1.5rem 1.75rem;
+  padding: 2rem 2.25rem;
+  max-width: 640px;
 }
 
 .ueber-uns h2 {
@@ -171,7 +178,7 @@ main {
 }
 
 .karte-inhalt {
-  padding: 1.1rem 1.2rem 1.3rem;
+  padding: 1.4rem 1.5rem 1.6rem;
 }
 
 .karte h2 {
@@ -230,10 +237,16 @@ main {
   box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
 }
 
+.admin-bereich {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 2.5rem 3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .admin-toggle {
-  position: fixed;
-  bottom: 1rem;
-  left: 1rem;
   font-family: var(--font-body);
   font-size: 0.75rem;
   background: var(--karte-bg);
@@ -242,7 +255,7 @@ main {
   padding: 0.35rem 0.7rem;
   border-radius: 999px;
   cursor: pointer;
-  opacity: 0.45;
+  opacity: 0.55;
   transition: opacity 0.15s ease, border-color 0.15s ease;
 }
 
@@ -254,16 +267,13 @@ main {
 
 .admin-badge {
   display: none;
-  position: fixed;
-  bottom: 1rem;
-  right: 1rem;
   background: var(--karte-bg);
   border: 1px solid var(--backen);
   color: var(--backen);
-  padding: 0.5rem 0.9rem;
+  padding: 0.35rem 0.8rem;
   border-radius: 999px;
   font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   box-shadow: 0 0 12px rgba(255, 46, 166, 0.4);
 }
 
@@ -278,5 +288,12 @@ main {
 
   header h1 {
     font-size: 2.2rem;
+  }
+
+  header,
+  .site-nav,
+  main {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
   }
 }
