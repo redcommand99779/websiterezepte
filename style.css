@@ -19,9 +19,9 @@
 
 body {
   margin: 0;
+  position: relative;
+  overflow-x: hidden;
   background:
-    radial-gradient(circle at 15% 0%, rgba(0, 240, 255, 0.08), transparent 45%),
-    radial-gradient(circle at 85% 20%, rgba(255, 46, 166, 0.07), transparent 45%),
     repeating-linear-gradient(0deg, rgba(232, 233, 255, 0.035) 0 1px, transparent 1px 48px),
     repeating-linear-gradient(90deg, rgba(232, 233, 255, 0.035) 0 1px, transparent 1px 48px),
     var(--bg);
@@ -30,6 +30,49 @@ body {
   font-family: var(--font-body);
   line-height: 1.5;
   transition: background 0.2s ease, color 0.2s ease;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  width: 55vmax;
+  height: 55vmax;
+  border-radius: 50%;
+  filter: blur(90px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+body::before {
+  top: -15%;
+  left: -15%;
+  background: rgba(0, 240, 255, 0.14);
+  animation: glow-drift-a 24s ease-in-out infinite alternate;
+}
+
+body::after {
+  bottom: -15%;
+  right: -15%;
+  background: rgba(255, 46, 166, 0.12);
+  animation: glow-drift-b 28s ease-in-out infinite alternate;
+}
+
+@keyframes glow-drift-a {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(12vw, 8vh); }
+}
+
+@keyframes glow-drift-b {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-10vw, -10vh); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after {
+    animation: none;
+  }
 }
 
 header {
@@ -302,5 +345,14 @@ main {
   main {
     padding-left: 1.25rem;
     padding-right: 1.25rem;
+  }
+
+  .site-nav {
+    flex-wrap: wrap;
+  }
+
+  .nav-tab {
+    font-size: 1rem;
+    padding: 0.7rem 1.25rem;
   }
 }
