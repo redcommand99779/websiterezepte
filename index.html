@@ -10,32 +10,15 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>Meine Rezepte</h1>
-    <p>Eine kleine Sammlung von Gerichten, die bei uns immer wieder auf den Tisch kommen.</p>
-  </header>
-
-  <nav class="site-nav" aria-label="Hauptnavigation">
-    <a class="nav-tab aktiv" href="index.html">Home</a>
-    <a class="nav-tab" href="backen.html">Backen</a>
-    <a class="nav-tab" href="kochen.html">Kochen</a>
-  </nav>
-
-  <main class="main-zentriert">
-    <section class="ueber-uns">
-      <h2>Über uns</h2>
-      <p>Hier gibt's bald mehr über uns zu lesen.</p>
-    </section>
+  <main>
+    <div class="leinwand-aussen" id="leinwand-aussen">
+      <div class="leinwand" id="leinwand"></div>
+    </div>
   </main>
-
-  <div class="admin-bereich">
-    <button id="admin-toggle" class="admin-toggle" type="button" aria-pressed="false">🔧 Admin-Modus</button>
-    <div class="admin-badge">🔧 Admin-Modus aktiv</div>
-  </div>
 
   <script src="app.js"></script>
   <script>
-    adminModusInitialisieren();
+    seiteRendern("seiten/home.json");
   </script>
 </body>
 </html>

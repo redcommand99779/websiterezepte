@@ -10,32 +10,15 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>Kochen</h1>
-    <p>Alles, was in Topf oder Pfanne entsteht.</p>
-  </header>
-
-  <nav class="site-nav" aria-label="Hauptnavigation">
-    <a class="nav-tab" href="index.html">Home</a>
-    <a class="nav-tab" href="backen.html">Backen</a>
-    <a class="nav-tab aktiv" href="kochen.html">Kochen</a>
-  </nav>
-
   <main>
-    <input type="search" id="suche" class="suche-feld" placeholder="Rezept suchen…" aria-label="Rezept suchen">
-    <div class="grid" id="rezepte-grid"></div>
+    <div class="leinwand-aussen" id="leinwand-aussen">
+      <div class="leinwand" id="leinwand"></div>
+    </div>
   </main>
-
-  <div class="admin-bereich">
-    <button id="admin-toggle" class="admin-toggle" type="button" aria-pressed="false">🔧 Admin-Modus</button>
-    <div class="admin-badge">🔧 Admin-Modus aktiv</div>
-  </div>
 
   <script src="app.js"></script>
   <script>
-    ladeUndRenderRezepte("Kochen");
-    sucheInitialisieren();
-    adminModusInitialisieren();
+    seiteRendern("seiten/kochen.json");
   </script>
 </body>
 </html>

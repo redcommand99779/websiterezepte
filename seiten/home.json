@@ -1,0 +1,7 @@
+[
+  { "id": "titel", "typ": "text", "tag": "h1", "klasse": "leinwand-h1", "text": "Meine Rezepte", "x": 40, "y": 72, "breite": 1200 },
+  { "id": "untertitel", "typ": "text", "tag": "p", "klasse": "leinwand-p", "text": "Eine kleine Sammlung von Gerichten, die bei uns immer wieder auf den Tisch kommen.", "x": 40, "breite": 1200, "abstandNach": 24 },
+  { "id": "nav", "typ": "nav", "aktiv": "Home", "x": 40, "abstandNach": 48 },
+  { "id": "ueber-uns", "typ": "ueber-uns", "titel": "Über uns", "text": "Hier gibt's bald mehr über uns zu lesen.", "x": 40, "breite": 640, "abstandNach": 48 },
+  { "id": "admin", "typ": "admin", "x": 40 }
+]

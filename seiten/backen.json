@@ -1,0 +1,7 @@
+[
+  { "id": "titel", "typ": "text", "tag": "h1", "klasse": "leinwand-h1", "text": "Backen", "x": 40, "y": 72, "breite": 1200 },
+  { "id": "untertitel", "typ": "text", "tag": "p", "klasse": "leinwand-p", "text": "Alles, was am Ende aus dem Ofen kommt.", "x": 40, "breite": 1200, "abstandNach": 24 },
+  { "id": "nav", "typ": "nav", "aktiv": "Backen", "x": 40, "abstandNach": 48 },
+  { "id": "rezepte", "typ": "rezept-grid", "kategorie": "Backen", "x": 40, "breite": 1200, "abstandNach": 48 },
+  { "id": "admin", "typ": "admin", "x": 40 }
+]

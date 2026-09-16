@@ -75,23 +75,34 @@ body::after {
   }
 }
 
-header {
+.leinwand-aussen {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 4.5rem 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
 }
 
-header h1 {
+.leinwand {
+  position: relative;
+  width: 1280px;
+  transform-origin: top left;
+}
+
+.leinwand-element {
+  position: absolute;
+}
+
+.leinwand-h1 {
   font-family: var(--font-headline);
   font-weight: 600;
   font-size: 3.25rem;
-  margin: 0 0 0.85rem;
+  margin: 0;
   text-shadow: var(--headline-glow);
   text-transform: var(--headline-transform);
   letter-spacing: var(--headline-spacing);
 }
 
-header p {
+.leinwand-p {
   margin: 0;
   color: var(--text);
   opacity: 0.75;
@@ -99,9 +110,6 @@ header p {
 }
 
 .site-nav {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 2.5rem 3rem;
   display: flex;
   gap: 1rem;
 }
@@ -139,19 +147,6 @@ header p {
 a:focus-visible {
   outline: 2px solid var(--text);
   outline-offset: 2px;
-}
-
-main {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 2.5rem 6rem;
-}
-
-.main-zentriert {
-  min-height: 55vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
 
 .suche-feld {
@@ -288,12 +283,10 @@ main {
 }
 
 .admin-bereich {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 2.5rem 3rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  padding-bottom: 3rem;
 }
 
 .admin-toggle {
@@ -336,15 +329,29 @@ main {
     grid-template-columns: 1fr;
   }
 
-  header h1 {
+  .leinwand-h1 {
     font-size: 2.2rem;
   }
 
-  header,
-  .site-nav,
-  main {
+  .leinwand-aussen {
+    max-width: none;
+    overflow: visible;
     padding-left: 1.25rem;
     padding-right: 1.25rem;
+  }
+
+  .leinwand {
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+  }
+
+  .leinwand-element {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    margin-bottom: 1.5rem;
   }
 
   .site-nav {
