@@ -145,6 +145,7 @@ async function seiteRendern(schemaPfad) {
 
     const div = document.createElement("div");
     div.className = "leinwand-element";
+    div.dataset.schema = JSON.stringify(element);
     div.style.left = (element.x || 0) + "px";
     div.style.top = y + "px";
     if (element.breite) div.style.width = element.breite + "px";
