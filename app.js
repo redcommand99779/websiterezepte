@@ -124,8 +124,14 @@ function leinwandSkalieren() {
 
   const REFERENZBREITE = 1280;
   const massstab = Math.min(1, aussen.clientWidth / REFERENZBREITE);
-  leinwand.style.transform = `scale(${massstab})`;
-  aussen.style.height = (leinwand.offsetHeight * massstab) + "px";
+
+  if (massstab >= 0.999) {
+    leinwand.style.transform = "none";
+    aussen.style.height = leinwand.offsetHeight + "px";
+  } else {
+    leinwand.style.transform = `scale(${massstab})`;
+    aussen.style.height = (leinwand.offsetHeight * massstab) + "px";
+  }
 }
 
 window.addEventListener("resize", leinwandSkalieren);
