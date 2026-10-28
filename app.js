@@ -145,6 +145,7 @@ async function seiteRendern(schemaPfad) {
   leinwand.innerHTML = "";
 
   let naechsteY = 0;
+  let unterkante = 0;
 
   for (const element of elemente) {
     const y = element.y !== undefined ? element.y : naechsteY;
@@ -155,6 +156,7 @@ async function seiteRendern(schemaPfad) {
     div.style.left = (element.x || 0) + "px";
     div.style.top = y + "px";
     if (element.breite) div.style.width = element.breite + "px";
+    if (element.hoehe) div.style.height = element.hoehe + "px";
 
     leinwandElementFuellen(div, element);
     leinwand.appendChild(div);
@@ -163,10 +165,11 @@ async function seiteRendern(schemaPfad) {
       await ladeUndRenderRezepte(element.kategorie || null);
     }
 
+    unterkante = Math.max(unterkante, y + div.offsetHeight);
     naechsteY = y + div.offsetHeight + (element.abstandNach ?? 32);
   }
 
-  leinwand.style.height = naechsteY + "px";
+  leinwand.style.height = Math.max(naechsteY, unterkante + 32) + "px";
 
   sucheInitialisieren();
   adminModusInitialisieren();
