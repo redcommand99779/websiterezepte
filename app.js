@@ -68,15 +68,40 @@ function adminModusInitialisieren() {
   });
 }
 
-function navMarkup(aktiveSeite) {
-  const seiten = [
-    { label: "Home", href: "index.html" },
-    { label: "Backen", href: "backen.html" },
-    { label: "Kochen", href: "kochen.html" }
-  ];
+function htmlEscape(text) {
+  return String(text ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
-  const links = seiten
-    .map(s => `<a class="nav-tab${s.label === aktiveSeite ? " aktiv" : ""}" href="${s.href}">${s.label}</a>`)
+function sichereUrl(ziel) {
+  const text = String(ziel ?? "").trim();
+  if (!text) return "#";
+  if (/^(https?:|mailto:)/i.test(text)) return text;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(text)) return "#";
+  return text;
+}
+
+let navigationEintraege = [
+  { label: "Home", href: "index.html" },
+  { label: "Backen", href: "backen.html" },
+  { label: "Kochen", href: "kochen.html" }
+];
+
+async function navigationLaden() {
+  try {
+    const antwort = await fetch("navigation.json");
+    if (antwort.ok) navigationEintraege = await antwort.json();
+  } catch {
+    // Ohne navigation.json bleibt die eingebaute Standardliste aktiv
+  }
+}
+
+function navMarkup(aktiveSeite) {
+  const links = navigationEintraege
+    .map(s => `<a class="nav-tab${s.label === aktiveSeite ? " aktiv" : ""}" href="${htmlEscape(s.href)}">${htmlEscape(s.label)}</a>`)
     .join("");
 
   return `<nav class="site-nav" aria-label="Hauptnavigation">${links}</nav>`;
@@ -90,11 +115,34 @@ function leinwandElementFuellen(div, element) {
     div.appendChild(tag);
   } else if (element.typ === "nav") {
     div.innerHTML = navMarkup(element.aktiv);
+  } else if (element.typ === "knopf") {
+    const link = document.createElement("a");
+    link.className = "button leinwand-knopf";
+    link.textContent = element.text || "Knopf";
+    const ziel = sichereUrl(element.ziel);
+    link.href = ziel;
+    if (ziel !== "#") {
+      if (element.aktion === "herunterladen") {
+        link.setAttribute("download", ziel.split("/").pop());
+      } else if (element.aktion === "ansehen" || /^https?:/i.test(ziel)) {
+        link.target = "_blank";
+        link.rel = "noopener";
+      }
+    }
+    div.appendChild(link);
+  } else if (element.typ === "kasten") {
+    div.innerHTML = '<div class="leinwand-kasten"></div>';
+  } else if (element.typ === "bild") {
+    const bild = document.createElement("img");
+    bild.className = "leinwand-bild";
+    bild.src = element.bild;
+    bild.alt = element.alt || "";
+    div.appendChild(bild);
   } else if (element.typ === "ueber-uns") {
     div.innerHTML = `
       <section class="ueber-uns">
-        <h2>${element.titel}</h2>
-        <p>${element.text}</p>
+        <h2>${htmlEscape(element.titel)}</h2>
+        <p>${htmlEscape(element.text)}</p>
       </section>
     `;
   } else if (element.typ === "rezept-grid") {
@@ -137,8 +185,26 @@ function leinwandSkalieren() {
 window.addEventListener("resize", leinwandSkalieren);
 window.addEventListener("load", leinwandSkalieren);
 
+function leinwandElementErstellen(element, y) {
+  const istSeitenende = element.typ === "seitenende";
+
+  const div = document.createElement("div");
+  div.className = "leinwand-element";
+  div.dataset.typ = element.typ;
+  div.dataset.schema = JSON.stringify(element);
+  div.style.left = (istSeitenende ? 0 : (element.x || 0)) + "px";
+  div.style.top = y + "px";
+
+  const breite = istSeitenende ? 1280 : element.breite;
+  if (breite) div.style.width = breite + "px";
+  if (element.hoehe) div.style.height = element.hoehe + "px";
+
+  leinwandElementFuellen(div, element);
+  return div;
+}
+
 async function seiteRendern(schemaPfad) {
-  const antwort = await fetch(schemaPfad);
+  const [antwort] = await Promise.all([fetch(schemaPfad), navigationLaden()]);
   const elemente = await antwort.json();
 
   const leinwand = document.getElementById("leinwand");
@@ -146,30 +212,37 @@ async function seiteRendern(schemaPfad) {
 
   let naechsteY = 0;
   let unterkante = 0;
+  let seitenEndeY = null;
 
   for (const element of elemente) {
     const y = element.y !== undefined ? element.y : naechsteY;
 
-    const div = document.createElement("div");
-    div.className = "leinwand-element";
-    div.dataset.schema = JSON.stringify(element);
-    div.style.left = (element.x || 0) + "px";
-    div.style.top = y + "px";
-    if (element.breite) div.style.width = element.breite + "px";
-    if (element.hoehe) div.style.height = element.hoehe + "px";
-
-    leinwandElementFuellen(div, element);
+    const div = leinwandElementErstellen(element, y);
     leinwand.appendChild(div);
 
     if (element.typ === "rezept-grid") {
       await ladeUndRenderRezepte(element.kategorie || null);
     }
 
+    if (element.typ === "seitenende") {
+      seitenEndeY = seitenEndeY === null ? y : Math.min(seitenEndeY, y);
+    }
+
     unterkante = Math.max(unterkante, y + div.offsetHeight);
     naechsteY = y + div.offsetHeight + (element.abstandNach ?? 32);
   }
 
-  leinwand.style.height = Math.max(naechsteY, unterkante + 32) + "px";
+  if (seitenEndeY !== null) {
+    leinwand.style.height = seitenEndeY + "px";
+    leinwand.querySelectorAll(":scope > .leinwand-element").forEach(div => {
+      const oben = parseFloat(div.style.top) || 0;
+      if (div.dataset.typ !== "seitenende" && oben >= seitenEndeY) {
+        div.classList.add("nach-seitenende");
+      }
+    });
+  } else {
+    leinwand.style.height = Math.max(naechsteY, unterkante + 32) + "px";
+  }
 
   sucheInitialisieren();
   adminModusInitialisieren();

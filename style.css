@@ -89,6 +89,59 @@ body::after {
 
 .leinwand-element {
   position: absolute;
+  z-index: 1;
+}
+
+.leinwand-element[data-typ="kasten"] {
+  z-index: 0;
+}
+
+.leinwand-element[data-typ="seitenende"],
+.leinwand-element.nach-seitenende {
+  display: none;
+}
+
+.leinwand-kasten {
+  width: 100%;
+  height: 100%;
+  background: var(--karte-bg);
+  border: 1px solid var(--linie);
+  border-radius: 10px;
+}
+
+.leinwand-bild {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 1px solid var(--linie);
+  border-radius: 10px;
+}
+
+.leinwand-knopf {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 100%;
+  padding: 0.8rem 1.8rem;
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+
+.leinwand-text {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.6;
+}
+
+.leinwand-h2 {
+  margin: 0;
+  font-family: var(--font-headline);
+  font-weight: 600;
+  font-size: 2rem;
+  text-shadow: var(--headline-glow);
+  letter-spacing: var(--headline-spacing);
 }
 
 .leinwand-h1 {
