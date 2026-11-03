@@ -1,0 +1,13 @@
+[
+  { "id": "titel", "typ": "text", "tag": "h1", "klasse": "leinwand-h1", "text": "Datenschutz", "x": 40, "y": 72, "breite": 1200, "abstandNach": 24 },
+  { "id": "einleitung", "typ": "text", "tag": "p", "klasse": "leinwand-text", "text": "Diese Seite ist ein Schulprojekt von Jonathan Goßler und Ina Grimm. Hier steht, welche Daten beim Besuch anfallen. Es gibt keine Anmeldung, keine Kommentare und keine Formulare.", "x": 40, "breite": 800, "abstandNach": 32 },
+  { "id": "h-statistik", "typ": "text", "tag": "h2", "klasse": "leinwand-h2", "text": "Besucherstatistik", "x": 40, "breite": 800, "abstandNach": 12 },
+  { "id": "statistik", "typ": "text", "tag": "p", "klasse": "leinwand-text", "text": "Wir zählen Seitenaufrufe mit GoatCounter (goatcounter.com). Laut Anbieter setzt der Dienst keine Cookies und speichert keine personenbezogenen Daten. Erfasst werden die aufgerufene Seite, die Herkunftsseite, Browser, Betriebssystem, Bildschirmgröße und das grobe Herkunftsland. Gezählt werden auch Klicks auf PDF-Downloads, Filter und den Zufalls-Rezept-Knopf.", "x": 40, "breite": 800, "abstandNach": 32 },
+  { "id": "h-speicher", "typ": "text", "tag": "h2", "klasse": "leinwand-h2", "text": "Speicher im Browser", "x": 40, "breite": 800, "abstandNach": 12 },
+  { "id": "speicher", "typ": "text", "tag": "p", "klasse": "leinwand-text", "text": "Deine Favoriten werden nur in deinem Browser gespeichert (localStorage). Sie werden nicht an uns oder andere übertragen und verschwinden, wenn du die Browserdaten löschst.", "x": 40, "breite": 800, "abstandNach": 32 },
+  { "id": "h-schriften", "typ": "text", "tag": "h2", "klasse": "leinwand-h2", "text": "Schriftarten", "x": 40, "breite": 800, "abstandNach": 12 },
+  { "id": "schriften", "typ": "text", "tag": "p", "klasse": "leinwand-text", "text": "Die Schriftarten Orbitron und Rajdhani werden von Google Fonts (fonts.googleapis.com) geladen. Dabei wird deine IP-Adresse an Google übertragen.", "x": 40, "breite": 800, "abstandNach": 32 },
+  { "id": "h-hosting", "typ": "text", "tag": "h2", "klasse": "leinwand-h2", "text": "Hosting", "x": 40, "breite": 800, "abstandNach": 12 },
+  { "id": "hosting", "typ": "text", "tag": "p", "klasse": "leinwand-text", "text": "Die Seite wird über GitHub Pages ausgeliefert. GitHub kann dabei technische Zugriffsdaten wie deine IP-Adresse verarbeiten.", "x": 40, "breite": 800, "abstandNach": 48 },
+  { "id": "admin", "typ": "admin", "x": 40 }
+]

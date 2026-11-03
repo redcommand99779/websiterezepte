@@ -367,6 +367,154 @@ body::after {
   opacity: 1;
 }
 
+.herz {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--text);
+  background: rgba(10, 12, 22, 0.75);
+  border: 1px solid var(--linie);
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.herz:hover {
+  opacity: 1;
+  border-color: var(--backen);
+}
+
+.herz[aria-pressed="true"] {
+  color: var(--backen);
+  border-color: var(--backen);
+  opacity: 1;
+  text-shadow: 0 0 8px var(--backen);
+}
+
+.herz:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+.karte {
+  position: relative;
+}
+
+.karte > .herz {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 1;
+}
+
+.herz-gross {
+  width: auto;
+  height: auto;
+  padding: 0.2rem 0.85rem;
+  border-radius: 999px;
+  font-size: 1.1rem;
+}
+
+.herz-gross::after {
+  content: " Favorit";
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+}
+
+.portionen-regler {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.portionen-regler button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  font-family: var(--font-headline);
+  font-size: 1.2rem;
+  color: var(--text);
+  background: var(--karte-bg);
+  border: 1px solid var(--linie);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.portionen-regler button:hover {
+  border-color: var(--text);
+}
+
+.portionen-regler button:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+.portionen-regler output {
+  min-width: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.rezept-quelle {
+  margin: 1.5rem 0 0;
+  font-size: 0.95rem;
+  opacity: 0.65;
+}
+
+.gerade-offen-titel {
+  margin: 0 0 1rem;
+  font-family: var(--font-headline);
+  font-weight: 600;
+  font-size: 1.4rem;
+  text-shadow: var(--headline-glow);
+}
+
+.gerade-offen-liste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.offen-karte {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 180px;
+  padding: 0.9rem 1.4rem;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--karte-bg);
+  border: 1px solid var(--linie);
+  border-radius: 10px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.offen-karte:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--karte-glow);
+  border-color: var(--kochen);
+}
+
+.offen-karte strong {
+  font-family: var(--font-headline);
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.offen-karte small {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
 .rezept-titel {
   overflow-wrap: anywhere;
   text-transform: none; /* Großbuchstaben machen aus ß ein SS */

@@ -1,5 +1,6 @@
 [
   { "label": "Home", "href": "index.html" },
+  { "label": "Favoriten", "href": "favoriten.html" },
   {
     "gruppe": "Kategorien",
     "eintraege": [
@@ -23,5 +24,6 @@
       { "label": "Herbst", "href": "herbst.html", "zeitraum": { "von": "09-01", "bis": "11-30" } },
       { "label": "Winter", "href": "winter.html", "zeitraum": { "von": "12-01", "bis": "02-29" } }
     ]
-  }
+  },
+  { "label": "Datenschutz", "href": "datenschutz.html" }
 ]

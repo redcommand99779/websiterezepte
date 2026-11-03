@@ -5,6 +5,8 @@
     "bild": "bilder/marzipan-bratapfel.jpg",
     "dauer": 30,
     "portionen": 4,
+    "schwierigkeit": 2,
+    "quelle": "nach einem Rezept von lucy2208 auf Chefkoch.de, in eigenen Worten neu geschrieben",
     "tags": ["vegetarisch"],
     "zutaten": [
       "4 säuerliche Äpfel, z. B. Boskoop",

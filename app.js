@@ -106,6 +106,103 @@ function rezeptLink(rezept) {
   return `rezept.html?id=${encodeURIComponent(rezeptId(rezept))}`;
 }
 
+// ---------- Favoriten (nur im Browser gespeichert) ----------
+
+function favoritenLaden() {
+  try {
+    const liste = JSON.parse(localStorage.getItem("favoriten"));
+    return Array.isArray(liste) ? liste : [];
+  } catch {
+    return [];
+  }
+}
+
+function favoritUmschalten(id) {
+  const liste = favoritenLaden();
+  const neu = liste.includes(id) ? liste.filter(f => f !== id) : [...liste, id];
+  try {
+    localStorage.setItem("favoriten", JSON.stringify(neu));
+  } catch {
+    // Ohne Browser-Speicher (z. B. privates Fenster) wird der Favorit nicht gemerkt
+  }
+  return neu.includes(id);
+}
+
+function herzKnopf(rezept, klasse = "") {
+  const id = rezeptId(rezept);
+  const aktiv = favoritenLaden().includes(id);
+  return `<button type="button" class="herz ${klasse}" data-id="${htmlEscape(id)}" aria-pressed="${aktiv}" aria-label="Als Favorit merken" title="Als Favorit merken">♥</button>`;
+}
+
+// ---------- Schwierigkeit ----------
+
+const SCHWIERIGKEIT = ["einfach", "mittel", "anspruchsvoll"];
+
+function schwierigkeitStufe(rezept) {
+  const stufe = Math.round(Number(rezept.schwierigkeit));
+  return stufe >= 1 && stufe <= 3 ? stufe : 0;
+}
+
+function sterne(stufe) {
+  return "★".repeat(stufe) + "☆".repeat(3 - stufe);
+}
+
+// ---------- Portionen umrechnen ----------
+
+const BRUECHE = [[0.125, "1/8"], [0.25, "1/4"], [1 / 3, "1/3"], [0.5, "1/2"], [2 / 3, "2/3"], [0.75, "3/4"]];
+
+function mengeFormat(wert) {
+  const ganz = Math.floor(wert);
+  const rest = wert - ganz;
+
+  if (rest < 0.02) return String(ganz);
+  if (rest > 0.98) return String(ganz + 1);
+
+  const bruch = BRUECHE.find(([zahl]) => Math.abs(rest - zahl) < 0.02);
+  if (bruch) return ganz > 0 ? `${ganz} ${bruch[1]}` : bruch[1];
+
+  return String(Math.round(wert * 100) / 100).replace(".", ",");
+}
+
+// Skaliert die Zahl am Anfang einer Zutat ("100 g Mehl", "1/2 l Milch", "1 1/2 EL Zucker"); alles andere bleibt
+function zutatSkalieren(text, faktor) {
+  if (faktor === 1) return text;
+
+  const treffer = text.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:[.,]\d+)?)(?=\s)/);
+  if (!treffer) return text;
+
+  const roh = treffer[1];
+  let wert;
+  if (roh.includes("/")) {
+    const teile = roh.split(/\s+/);
+    const [zaehler, nenner] = teile[teile.length - 1].split("/").map(Number);
+    wert = (teile.length > 1 ? Number(teile[0]) : 0) + zaehler / nenner;
+  } else {
+    wert = Number(roh.replace(",", "."));
+  }
+  const rest = text.slice(roh.length);
+  // Gramm und Milliliter als ganze Zahl statt als Bruch
+  if (/^\s+(g|ml)\b/.test(rest)) return Math.round(wert * faktor) + rest;
+  return mengeFormat(wert * faktor) + rest;
+}
+
+let detailRezept = null;
+let detailPortionen = null;
+
+function zutatenListeHtml() {
+  const faktor = detailRezept.portionen && detailPortionen ? detailPortionen / detailRezept.portionen : 1;
+  return detailRezept.zutaten.map(z => `<li>${htmlEscape(zutatSkalieren(z, faktor))}</li>`).join("");
+}
+
+function portionenAendern(schritt) {
+  if (!detailRezept || !detailPortionen) return;
+
+  detailPortionen = Math.min(24, Math.max(1, detailPortionen + schritt));
+  document.getElementById("portionen-wert").textContent = detailPortionen;
+  document.getElementById("zutaten-liste").innerHTML = zutatenListeHtml();
+  leinwandAnordnen();
+}
+
 function rezeptKarte(rezept) {
   const kategorieKlasse = rezept.kategorie === "Backen" ? "backen" : "kochen";
   const titel = htmlEscape(rezept.titel);
@@ -115,15 +212,20 @@ function rezeptKarte(rezept) {
     : '<div class="karte-bild-leer"></div>';
   const pdf = rezept.pdf ? sichereUrl(rezept.pdf) : null;
   const dauer = rezept.dauer ? ` · ${htmlEscape(rezept.dauer)} Min` : "";
+  const stufe = schwierigkeitStufe(rezept);
+  const schwierigkeit = stufe
+    ? ` · <span title="Schwierigkeit: ${SCHWIERIGKEIT[stufe - 1]}" aria-label="Schwierigkeit: ${SCHWIERIGKEIT[stufe - 1]}">${sterne(stufe)}</span>`
+    : "";
 
   return `
     <article class="karte">
+      ${herzKnopf(rezept)}
       <a class="karte-bildlink" href="${link}" tabindex="-1" aria-hidden="true">${bild}</a>
       <div class="karte-inhalt">
         <h2><a href="${link}">${titel}</a></h2>
         <span class="kategorie-label">
           <span class="punkt ${kategorieKlasse}"></span>
-          ${htmlEscape(rezept.kategorie)}${dauer}
+          ${htmlEscape(rezept.kategorie)}${dauer}${schwierigkeit}
         </span>
         <div class="karte-buttons">
           <a class="button" href="${link}">Ansehen</a>
@@ -142,6 +244,7 @@ const FILTER = [
 const aktiveFilter = new Set();
 
 let aktuellerKategorieFilter = null;
+let nurFavoriten = false;
 
 function gridRendern() {
   const grid = document.getElementById("rezepte-grid");
@@ -151,7 +254,11 @@ function gridRendern() {
   const suche = (document.getElementById("suche")?.value || "").trim().toLowerCase();
   const gesperrt = zeitraumGesperrt(aktuellerZeitraum);
 
-  const kategorieRezepte = alleRezepteGlobal.filter(r => !aktuellerKategorieFilter || r.kategorie === aktuellerKategorieFilter);
+  const favoriten = favoritenLaden();
+  const kategorieRezepte = alleRezepteGlobal.filter(r =>
+    (!aktuellerKategorieFilter || r.kategorie === aktuellerKategorieFilter) &&
+    (!nurFavoriten || (favoriten.includes(rezeptId(r)) && !zeitraumGesperrt(navigationFlach().find(e => e.label === r.kategorie)?.zeitraum)))
+  );
   if (filterLeiste) filterLeiste.hidden = gesperrt || !kategorieRezepte.length;
 
   if (gesperrt) {
@@ -165,7 +272,8 @@ function gridRendern() {
     if (rezepte.length) {
       grid.innerHTML = rezepte.map(rezeptKarte).join("");
     } else {
-      const text = kategorieRezepte.length ? "Keine Rezepte passen zu Suche und Filter." : "Noch keine Rezepte hier.";
+      const leer = nurFavoriten ? "Noch keine Favoriten. Tippe bei einem Rezept auf das Herz." : "Noch keine Rezepte hier.";
+      const text = kategorieRezepte.length ? "Keine Rezepte passen zu Suche und Filter." : leer;
       grid.innerHTML = `<p class="leer-hinweis">${text}</p>`;
     }
   }
@@ -196,12 +304,29 @@ function rezeptDetailRendern() {
     return;
   }
 
+  if (detailRezept !== rezept) {
+    detailRezept = rezept;
+    detailPortionen = rezept.portionen || null;
+  }
+  const mitRegler = Boolean(rezept.zutaten?.length && rezept.portionen);
+  const stufe = schwierigkeitStufe(rezept);
+
   const meta = [
     rezept.kategorie,
     rezept.dauer ? `${rezept.dauer} Min` : null,
-    rezept.portionen ? `${rezept.portionen} Portionen` : null,
+    rezept.portionen && !mitRegler ? `${rezept.portionen} Portionen` : null,
+    stufe ? `Schwierigkeit: ${sterne(stufe)} (${SCHWIERIGKEIT[stufe - 1]})` : null,
     ...(rezept.tags || []).map(t => t.charAt(0).toUpperCase() + t.slice(1))
   ].filter(Boolean).map(t => `<span class="rezept-meta-chip">${htmlEscape(t)}</span>`).join("");
+
+  const regler = mitRegler
+    ? `<div class="portionen-regler">
+        <span>Portionen</span>
+        <button type="button" data-portionen="-1" aria-label="Eine Portion weniger">−</button>
+        <output id="portionen-wert" aria-live="polite">${detailPortionen}</output>
+        <button type="button" data-portionen="1" aria-label="Eine Portion mehr">+</button>
+      </div>`
+    : "";
 
   const liste = (tag, eintraege) => eintraege?.length
     ? `<${tag}>${eintraege.map(e => `<li>${htmlEscape(e)}</li>`).join("")}</${tag}>`
@@ -211,10 +336,11 @@ function rezeptDetailRendern() {
   container.innerHTML = `
     ${zurueck}
     <h1 class="leinwand-h1 rezept-titel">${htmlEscape(rezept.titel)}</h1>
-    <div class="rezept-meta">${meta}</div>
+    <div class="rezept-meta">${meta}${herzKnopf(rezept, "herz-gross")}</div>
     ${rezept.bild ? `<img class="rezept-bild" src="${htmlEscape(sichereUrl(rezept.bild))}" alt="${htmlEscape(rezept.titel)}">` : ""}
-    ${rezept.zutaten?.length ? `<h2 class="rezept-abschnitt">Zutaten</h2>${liste("ul", rezept.zutaten)}` : ""}
+    ${rezept.zutaten?.length ? `<h2 class="rezept-abschnitt">Zutaten</h2>${regler}<ul id="zutaten-liste">${zutatenListeHtml()}</ul>` : ""}
     ${rezept.schritte?.length ? `<h2 class="rezept-abschnitt">Zubereitung</h2>${liste("ol", rezept.schritte)}` : ""}
+    ${rezept.quelle ? `<p class="rezept-quelle">Quelle: ${htmlEscape(rezept.quelle)}</p>` : ""}
     ${pdf ? `<a class="button rezept-pdf" href="${htmlEscape(pdf)}" download="${htmlEscape(pdf.split("/").pop())}">PDF herunterladen</a>` : ""}
   `;
   document.title = `${rezept.titel} – Meine Rezepte`;
@@ -239,6 +365,41 @@ async function zufallsRezeptOeffnen(hinweis) {
     return;
   }
   location.href = rezeptLink(verfuegbar[Math.floor(Math.random() * verfuegbar.length)]);
+}
+
+function geradeOffenRendern() {
+  const container = document.getElementById("gerade-offen");
+  if (!container) return;
+
+  const tagMonat = md => {
+    const [monat, tag] = md.split("-").map(Number);
+    return `${tag}. ${MONATE_LANG[monat - 1]}`;
+  };
+  const offen = navigationFlach().filter(e => e.zeitraum && zeitraumVerfuegbar(e.zeitraum));
+
+  const inhalt = offen.length
+    ? offen.map(e => `<a class="offen-karte" href="${htmlEscape(e.href)}"><strong>${htmlEscape(e.label)}</strong><small>noch bis ${htmlEscape(tagMonat(e.zeitraum.bis))}</small></a>`).join("")
+    : '<p class="leer-hinweis">Gerade ist keine Fest- oder Jahreszeitenseite offen.</p>';
+
+  container.innerHTML = `<h2 class="gerade-offen-titel">Gerade offen</h2><div class="gerade-offen-liste">${inhalt}</div>`;
+}
+
+function interaktionenInitialisieren() {
+  document.addEventListener("click", e => {
+    const herz = e.target.closest(".herz");
+    if (herz) {
+      const id = herz.dataset.id;
+      const aktiv = favoritUmschalten(id);
+      document.querySelectorAll(".herz").forEach(h => {
+        if (h.dataset.id === id) h.setAttribute("aria-pressed", String(aktiv));
+      });
+      if (nurFavoriten) gridRendern();
+      return;
+    }
+
+    const schritt = e.target.closest("[data-portionen]");
+    if (schritt) portionenAendern(Number(schritt.dataset.portionen));
+  });
 }
 
 function sucheInitialisieren() {
@@ -420,6 +581,8 @@ function leinwandElementFuellen(div, element) {
     div.innerHTML = `${sucheHtml}${filterHtml}<div class="grid" id="rezepte-grid"></div>`;
   } else if (element.typ === "rezept-detail") {
     div.innerHTML = '<div id="rezept-detail"></div>';
+  } else if (element.typ === "gerade-offen") {
+    div.innerHTML = '<div id="gerade-offen"></div>';
   } else if (element.typ === "admin") {
     div.innerHTML = `
       <div class="admin-bereich">
@@ -529,9 +692,13 @@ async function seiteRendern(schemaPfad) {
   if (elemente.some(e => e.typ === "rezept-grid" || e.typ === "rezept-detail")) {
     await rezepteLaden().catch(() => {});
   }
-  aktuellerKategorieFilter = elemente.find(e => e.typ === "rezept-grid")?.kategorie || null;
+  const gridElement = elemente.find(e => e.typ === "rezept-grid");
+  aktuellerKategorieFilter = gridElement?.kategorie || null;
+  nurFavoriten = Boolean(gridElement?.nurFavoriten);
   gridRendern();
   rezeptDetailRendern();
+  geradeOffenRendern();
+  interaktionenInitialisieren();
 
   seitenleisteInitialisieren();
   sucheInitialisieren();
