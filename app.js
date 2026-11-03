@@ -14,138 +14,6 @@ function sichereUrl(ziel) {
   return text;
 }
 
-// ---------- Schriftarten (Auswahl im Einstellungsmenü der Seitenleiste) ----------
-
-let schriftenConfig = { standard: { headline: "Orbitron", body: "Rajdhani" }, schriften: [] };
-
-async function schriftenLaden() {
-  try {
-    const antwort = await fetch("schriften.json");
-    if (antwort.ok) schriftenConfig = await antwort.json();
-  } catch {
-    // Ohne schriften.json bleiben die Schriften aus style.css und es gibt kein Auswahlmenü
-  }
-}
-
-function schriftName(schrift) {
-  return String(schrift.name).replace(/["\\]/g, "");
-}
-
-function schriftFamilie(schrift) {
-  return schrift.familie || `"${schriftName(schrift)}"`;
-}
-
-const SCHRIFT_FORMATE = { woff2: "woff2", woff: "woff", ttf: "truetype", otf: "opentype" };
-
-// Schriften mit "datei" (z. B. "schriften/Name.woff2") werden hier als @font-face eingebunden
-function schriftFacesEinfuegen() {
-  const regeln = schriftenConfig.schriften.filter(s => s.datei).map(s => {
-    const datei = sichereUrl(s.datei).replace(/["\\]/g, "");
-    const format = SCHRIFT_FORMATE[datei.split(".").pop().toLowerCase()];
-    return `@font-face { font-family: "${schriftName(s)}"; src: url("${datei}")${format ? ` format("${format}")` : ""}; font-weight: ${schriftenGewichtGueltig(s.gewicht)}; font-display: swap; }`;
-  });
-  if (!regeln.length) return;
-
-  const style = document.createElement("style");
-  style.textContent = regeln.join("\n");
-  document.head.appendChild(style);
-}
-
-function schriftenGewichtGueltig(gewicht) {
-  return /^\d{3}( \d{3})?$/.test(String(gewicht ?? "")) ? gewicht : "100 900";
-}
-
-function schriftenGewaehlt() {
-  let gespeichert = {};
-  try {
-    gespeichert = JSON.parse(localStorage.getItem("schriften")) || {};
-  } catch {
-    // Ohne Browser-Speicher gelten die Standardschriften
-  }
-
-  const waehle = bereich => schriftenConfig.schriften.some(s => s.name === gespeichert[bereich])
-    ? gespeichert[bereich]
-    : schriftenConfig.standard[bereich];
-  return { headline: waehle("headline"), body: waehle("body") };
-}
-
-function schriftenAnwenden() {
-  const gewaehlt = schriftenGewaehlt();
-
-  for (const [bereich, variable] of [["headline", "--font-headline"], ["body", "--font-body"]]) {
-    const schrift = schriftenConfig.schriften.find(s => s.name === gewaehlt[bereich]);
-    if (schrift) document.documentElement.style.setProperty(variable, `${schriftFamilie(schrift)}, sans-serif`);
-  }
-}
-
-function schriftenMenuErstellen() {
-  if (schriftenConfig.schriften.length < 2) return null;
-
-  const details = document.createElement("details");
-  details.className = "seitenleiste-gruppe seitenleiste-einstellungen";
-  details.innerHTML = "<summary>Einstellungen</summary>";
-
-  for (const [bereich, titel] of [["headline", "Schrift für Überschriften"], ["body", "Schrift für Text"]]) {
-    const label = document.createElement("p");
-    label.className = "schrift-label";
-    label.textContent = titel;
-    details.append(label);
-
-    const liste = document.createElement("div");
-    liste.className = "schrift-liste";
-    details.append(liste);
-
-    for (const schrift of schriftenConfig.schriften) {
-      const knopf = document.createElement("button");
-      knopf.type = "button";
-      knopf.className = "schrift-knopf";
-      knopf.dataset.bereich = bereich;
-      knopf.dataset.name = schrift.name;
-      knopf.textContent = schrift.name;
-      knopf.style.fontFamily = `${schriftFamilie(schrift)}, sans-serif`;
-      liste.append(knopf);
-    }
-  }
-
-  const zuruecksetzen = document.createElement("button");
-  zuruecksetzen.type = "button";
-  zuruecksetzen.className = "schrift-reset";
-  zuruecksetzen.textContent = "Zurücksetzen";
-  details.append(zuruecksetzen);
-
-  function markieren() {
-    const gewaehlt = schriftenGewaehlt();
-    details.querySelectorAll(".schrift-knopf").forEach(k => {
-      k.setAttribute("aria-pressed", String(gewaehlt[k.dataset.bereich] === k.dataset.name));
-    });
-  }
-
-  details.addEventListener("click", e => {
-    const knopf = e.target.closest(".schrift-knopf");
-    try {
-      if (knopf) {
-        const gewaehlt = schriftenGewaehlt();
-        gewaehlt[knopf.dataset.bereich] = knopf.dataset.name;
-        localStorage.setItem("schriften", JSON.stringify(gewaehlt));
-      } else if (e.target.closest(".schrift-reset")) {
-        localStorage.removeItem("schriften");
-      } else {
-        return;
-      }
-    } catch {
-      // Ohne Browser-Speicher gilt die Auswahl nur bis zum Neuladen
-    }
-
-    schriftenAnwenden();
-    markieren();
-    leinwandAnordnen();
-    document.fonts?.ready.then(leinwandAnordnen);
-  });
-
-  markieren();
-  return details;
-}
-
 // ---------- Navigation und Zeiträume ----------
 
 let navigationEintraege = [
@@ -643,9 +511,6 @@ function seitenleisteInitialisieren() {
 
   document.body.append(knopf, hintergrund, leiste);
 
-  const schriftenMenu = schriftenMenuErstellen();
-  if (schriftenMenu) leiste.append(schriftenMenu);
-
   const hinweis = leiste.querySelector(".seitenleiste-hinweis");
   leiste.querySelector(".seitenleiste-zufall").addEventListener("click", () => zufallsRezeptOeffnen(hinweis));
 
@@ -810,11 +675,8 @@ function leinwandAnordnen() {
 }
 
 async function seiteRendern(schemaPfad) {
-  const [antwort] = await Promise.all([fetch(schemaPfad), navigationLaden(), schriftenLaden()]);
+  const [antwort] = await Promise.all([fetch(schemaPfad), navigationLaden()]);
   const elemente = await antwort.json();
-
-  schriftFacesEinfuegen();
-  schriftenAnwenden();
 
   aktuellerZeitraum = navigationFlach().find(e => e.href === aktiveDatei())?.zeitraum || null;
 
