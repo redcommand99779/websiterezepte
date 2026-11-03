@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "titel": "Marzipan-Bratäpfel mit Vanillesoße",
+    "kategorie": "Winter",
+    "bild": "bilder/marzipan-bratapfel.jpg",
+    "dauer": 30,
+    "portionen": 4,
+    "tags": ["vegetarisch"],
+    "zutaten": [
+      "4 säuerliche Äpfel, z. B. Boskoop",
+      "100 g Marzipanrohmasse",
+      "1 EL Rosinen, dazu etwas mehr zum Bestreuen",
+      "3 EL gehackte Mandeln, dazu etwas mehr zum Bestreuen",
+      "4 EL Zitronensaft",
+      "1/8 l Apfelsaft",
+      "1 Päckchen Vanille-Soßenpulver (für 1/2 l Milch)",
+      "2 EL Zucker",
+      "1/2 l Milch"
+    ],
+    "schritte": [
+      "Das Marzipan in kleine Stücke schneiden und mit den Rosinen und den gehackten Mandeln verkneten. Die Masse in vier gleich große Portionen teilen und zu etwa 1 cm dicken Rollen formen.",
+      "Bei jedem Apfel oben einen Deckel abschneiden und das Kerngehäuse herausstechen. In jedes Loch eine Marzipanrolle drücken.",
+      "Die Äpfel in eine flache Auflaufform setzen, mit Zitronen- und Apfelsaft beträufeln und bei 200 °C etwa 25 Minuten im Ofen garen.",
+      "Währenddessen das Soßenpulver mit dem Zucker und 3 EL der kalten Milch glatt rühren. Die restliche Milch aufkochen, das angerührte Pulver einrühren und unter Rühren kurz aufkochen lassen.",
+      "Die Soße über die fertigen Bratäpfel gießen und mit Rosinen und Mandeln bestreuen."
+    ]
+  }
+]

@@ -367,6 +367,11 @@ body::after {
   opacity: 1;
 }
 
+.rezept-titel {
+  overflow-wrap: anywhere;
+  text-transform: none; /* Großbuchstaben machen aus ß ein SS */
+}
+
 .rezept-meta {
   display: flex;
   flex-wrap: wrap;
@@ -676,6 +681,10 @@ a:focus-visible {
 
   .leinwand-h1 {
     font-size: 2.2rem;
+  }
+
+  .leinwand-h1.rezept-titel {
+    font-size: 1.75rem;
   }
 
   .leinwand-aussen {
