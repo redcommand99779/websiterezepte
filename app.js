@@ -33,7 +33,9 @@ function gridRendern(suchbegriff) {
     return passtKategorie && passtSuche;
   });
 
-  grid.innerHTML = rezepte.map(rezeptKarte).join("");
+  grid.innerHTML = rezepte.length
+    ? rezepte.map(rezeptKarte).join("")
+    : '<p class="leer-hinweis">Noch keine Rezepte hier.</p>';
 }
 
 async function ladeUndRenderRezepte(kategorieFilter) {
@@ -99,12 +101,62 @@ async function navigationLaden() {
   }
 }
 
-function navMarkup(aktiveSeite) {
-  const links = navigationEintraege
-    .map(s => `<a class="nav-tab${s.label === aktiveSeite ? " aktiv" : ""}" href="${htmlEscape(s.href)}">${htmlEscape(s.label)}</a>`)
-    .join("");
+function seitenleisteLink(eintrag, aktiveDatei) {
+  const aktiv = eintrag.href === aktiveDatei;
+  return `<a class="seitenleiste-link${aktiv ? " aktiv" : ""}" href="${htmlEscape(eintrag.href)}"${aktiv ? ' aria-current="page"' : ""}>${htmlEscape(eintrag.label)}</a>`;
+}
 
-  return `<nav class="site-nav" aria-label="Hauptnavigation">${links}</nav>`;
+function seitenleisteMarkup() {
+  const aktiveDatei = location.pathname.split("/").pop() || "index.html";
+
+  return navigationEintraege.map(eintrag => {
+    if (!Array.isArray(eintrag.eintraege)) return seitenleisteLink(eintrag, aktiveDatei);
+
+    return `
+      <details class="seitenleiste-gruppe" open>
+        <summary>${htmlEscape(eintrag.gruppe)}</summary>
+        ${eintrag.eintraege.map(e => seitenleisteLink(e, aktiveDatei)).join("")}
+      </details>
+    `;
+  }).join("");
+}
+
+function seitenleisteInitialisieren() {
+  if (document.getElementById("seitenleiste")) return;
+
+  const knopf = document.createElement("button");
+  knopf.type = "button";
+  knopf.className = "seitenleiste-knopf";
+  knopf.setAttribute("aria-controls", "seitenleiste");
+  knopf.setAttribute("aria-expanded", "false");
+  knopf.setAttribute("aria-label", "Menü öffnen");
+  knopf.innerHTML = "<span></span><span></span><span></span>";
+
+  const hintergrund = document.createElement("div");
+  hintergrund.className = "seitenleiste-hintergrund";
+
+  const leiste = document.createElement("aside");
+  leiste.id = "seitenleiste";
+  leiste.className = "seitenleiste";
+  leiste.innerHTML = `<nav aria-label="Hauptnavigation">${seitenleisteMarkup()}</nav>`;
+
+  document.body.append(knopf, hintergrund, leiste);
+
+  function umschalten(offen) {
+    leiste.classList.toggle("offen", offen);
+    hintergrund.classList.toggle("offen", offen);
+    knopf.setAttribute("aria-expanded", String(offen));
+    knopf.setAttribute("aria-label", offen ? "Menü schließen" : "Menü öffnen");
+  }
+
+  knopf.addEventListener("click", () => umschalten(!leiste.classList.contains("offen")));
+  hintergrund.addEventListener("click", () => umschalten(false));
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && leiste.classList.contains("offen")) {
+      umschalten(false);
+      knopf.focus();
+    }
+  });
 }
 
 function leinwandElementFuellen(div, element) {
@@ -113,8 +165,6 @@ function leinwandElementFuellen(div, element) {
     tag.textContent = element.text;
     if (element.klasse) tag.className = element.klasse;
     div.appendChild(tag);
-  } else if (element.typ === "nav") {
-    div.innerHTML = navMarkup(element.aktiv);
   } else if (element.typ === "knopf") {
     const link = document.createElement("a");
     link.className = "button leinwand-knopf";
@@ -244,6 +294,7 @@ async function seiteRendern(schemaPfad) {
     leinwand.style.height = Math.max(naechsteY, unterkante + 32) + "px";
   }
 
+  seitenleisteInitialisieren();
   sucheInitialisieren();
   adminModusInitialisieren();
   leinwandSkalieren();

@@ -1,5 +1,27 @@
 [
   { "label": "Home", "href": "index.html" },
-  { "label": "Backen", "href": "backen.html" },
-  { "label": "Kochen", "href": "kochen.html" }
+  {
+    "gruppe": "Kategorien",
+    "eintraege": [
+      { "label": "Backen", "href": "backen.html" },
+      { "label": "Kochen", "href": "kochen.html" }
+    ]
+  },
+  {
+    "gruppe": "Feste",
+    "eintraege": [
+      { "label": "Weihnachten", "href": "weihnachten.html" },
+      { "label": "Ostern", "href": "ostern.html" },
+      { "label": "Halloween", "href": "halloween.html" }
+    ]
+  },
+  {
+    "gruppe": "Jahreszeiten",
+    "eintraege": [
+      { "label": "Frühling", "href": "fruehling.html" },
+      { "label": "Sommer", "href": "sommer.html" },
+      { "label": "Herbst", "href": "herbst.html" },
+      { "label": "Winter", "href": "winter.html" }
+    ]
+  }
 ]

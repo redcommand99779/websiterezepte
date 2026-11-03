@@ -1,0 +1,6 @@
+[
+  { "id": "titel", "typ": "text", "tag": "h1", "klasse": "leinwand-h1", "text": "Halloween", "x": 40, "y": 72, "breite": 1200 },
+  { "id": "untertitel", "typ": "text", "tag": "p", "klasse": "leinwand-p", "text": "Schaurig-leckeres für die gruseligste Nacht des Jahres.", "x": 40, "breite": 1200, "abstandNach": 48 },
+  { "id": "rezepte", "typ": "rezept-grid", "kategorie": "Halloween", "x": 40, "breite": 1200, "abstandNach": 48 },
+  { "id": "admin", "typ": "admin", "x": 40 }
+]

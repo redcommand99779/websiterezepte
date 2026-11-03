@@ -161,40 +161,165 @@ body::after {
   font-size: 1.15rem;
 }
 
-.site-nav {
+.seitenleiste-knopf {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 110;
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  padding: 0 11px;
+  background: var(--karte-bg);
+  border: 1px solid var(--linie);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.nav-tab {
+.seitenleiste-knopf span {
+  display: block;
+  height: 2px;
+  background: var(--text);
+  border-radius: 1px;
+}
+
+.seitenleiste-knopf:hover,
+.seitenleiste-knopf[aria-expanded="true"] {
+  border-color: var(--text);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.4);
+}
+
+.seitenleiste-hintergrund {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(5, 6, 12, 0.6);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+
+.seitenleiste-hintergrund.offen {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.seitenleiste {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 105;
+  width: 280px;
+  max-width: 85vw;
+  padding: 76px 1rem 1.5rem;
+  overflow-y: auto;
+  background: var(--karte-bg);
+  border-right: 1px solid var(--linie);
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition: transform 0.2s ease, visibility 0s linear 0.2s;
+}
+
+.seitenleiste.offen {
+  transform: none;
+  visibility: visible;
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seitenleiste,
+  .seitenleiste-hintergrund {
+    transition: none;
+  }
+}
+
+.seitenleiste nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.seitenleiste-link {
+  display: block;
   font-family: var(--font-headline);
   font-weight: 600;
-  font-size: 1.15rem;
+  font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   text-decoration: none;
-  background: transparent;
-  border: 1px solid var(--linie);
   color: var(--text);
-  padding: 0.85rem 2rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid transparent;
   border-radius: 8px;
-  cursor: pointer;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.nav-tab:hover {
-  border-color: var(--text);
-  transform: translateY(-2px);
+.seitenleiste-link:hover {
+  border-color: var(--linie);
 }
 
-.nav-tab.aktiv {
+.seitenleiste-link.aktiv {
   background: var(--text);
   color: var(--bg);
-  border-color: var(--text);
   box-shadow: 0 0 18px rgba(0, 240, 255, 0.55);
 }
 
-.nav-tab:focus-visible,
+.seitenleiste-gruppe {
+  margin-top: 0.75rem;
+}
+
+.seitenleiste-gruppe summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.65;
+}
+
+.seitenleiste-gruppe summary::-webkit-details-marker {
+  display: none;
+}
+
+.seitenleiste-gruppe summary::after {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.seitenleiste-gruppe[open] summary::after {
+  transform: rotate(-135deg);
+}
+
+.seitenleiste-gruppe .seitenleiste-link {
+  margin-top: 0.35rem;
+}
+
+.leer-hinweis {
+  margin: 0;
+  font-size: 1.15rem;
+  opacity: 0.6;
+}
+
+.seitenleiste-link:focus-visible,
+.seitenleiste-knopf:focus-visible,
+.seitenleiste-gruppe summary:focus-visible,
 .button:focus-visible,
 a:focus-visible {
   outline: 2px solid var(--text);
@@ -388,8 +513,7 @@ a:focus-visible {
   .leinwand-aussen {
     max-width: none;
     overflow: visible;
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
+    padding: 4.5rem 1.25rem 0;
   }
 
   .leinwand {
@@ -404,14 +528,5 @@ a:focus-visible {
     top: auto !important;
     width: 100% !important;
     margin-bottom: 1.5rem;
-  }
-
-  .site-nav {
-    flex-wrap: wrap;
-  }
-
-  .nav-tab {
-    font-size: 1rem;
-    padding: 0.7rem 1.25rem;
   }
 }
