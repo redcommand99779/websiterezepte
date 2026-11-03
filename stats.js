@@ -36,12 +36,14 @@ const GOATCOUNTER_CODE = "theredcommand";
   document.head.appendChild(skript);
 
   document.addEventListener("click", e => {
-    const ziel = e.target.closest(".seitenleiste-zufall, .filter-chip, .herz");
+    const ziel = e.target.closest(".seitenleiste-zufall, .filter-chip, .herz, #kochmodus-starten");
     if (!ziel) return;
 
     if (ziel.matches(".herz")) {
       // Nur das Merken zählt, nicht das Entfernen (dieser Handler läuft vor dem Umschalten, "false" = wird jetzt Favorit)
       if (ziel.getAttribute("aria-pressed") === "false") zaehlen({ path: `favorit/${ziel.dataset.id}`, title: "Favorit", event: true });
+    } else if (ziel.matches("#kochmodus-starten")) {
+      zaehlen({ path: "kochmodus", title: "Kochmodus", event: true });
     } else if (ziel.matches(".seitenleiste-zufall")) {
       zaehlen({ path: "zufalls-rezept", title: "Zufalls-Rezept", event: true });
     } else {

@@ -1,28 +1,28 @@
 [
   { "label": "Home", "href": "index.html" },
-  { "label": "Favoriten", "href": "favoriten.html" },
+  { "label": "Favoriten", "href": "favoriten.html", "farbe": "#ff2ea6" },
   {
     "gruppe": "Kategorien",
     "eintraege": [
-      { "label": "Backen", "href": "backen.html" },
-      { "label": "Kochen", "href": "kochen.html" }
+      { "label": "Backen", "href": "backen.html", "farbe": "#ff2ea6" },
+      { "label": "Kochen", "href": "kochen.html", "farbe": "#00f0ff" }
     ]
   },
   {
     "gruppe": "Feste",
     "eintraege": [
-      { "label": "Weihnachten", "href": "weihnachten.html", "zeitraum": { "von": "11-01", "bis": "01-14" } },
-      { "label": "Ostern", "href": "ostern.html", "zeitraum": { "von": "03-01", "bis": "04-30" } },
-      { "label": "Halloween", "href": "halloween.html", "zeitraum": { "von": "10-01", "bis": "10-31" } }
+      { "label": "Weihnachten", "href": "weihnachten.html", "farbe": "#ff3b4e", "zeitraum": { "von": "11-01", "bis": "01-14" } },
+      { "label": "Ostern", "href": "ostern.html", "farbe": "#e08cff", "zeitraum": { "von": "03-01", "bis": "04-30" } },
+      { "label": "Halloween", "href": "halloween.html", "farbe": "#ff6a00", "zeitraum": { "von": "10-01", "bis": "10-31" } }
     ]
   },
   {
     "gruppe": "Jahreszeiten",
     "eintraege": [
-      { "label": "Frühling", "href": "fruehling.html", "zeitraum": { "von": "03-01", "bis": "05-31" } },
-      { "label": "Sommer", "href": "sommer.html", "zeitraum": { "von": "06-01", "bis": "08-31" } },
-      { "label": "Herbst", "href": "herbst.html", "zeitraum": { "von": "09-01", "bis": "11-30" } },
-      { "label": "Winter", "href": "winter.html", "zeitraum": { "von": "12-01", "bis": "02-29" } }
+      { "label": "Frühling", "href": "fruehling.html", "farbe": "#5dff8a", "zeitraum": { "von": "03-01", "bis": "05-31" } },
+      { "label": "Sommer", "href": "sommer.html", "farbe": "#ffe14d", "zeitraum": { "von": "06-01", "bis": "08-31" } },
+      { "label": "Herbst", "href": "herbst.html", "farbe": "#d9a441", "zeitraum": { "von": "09-01", "bis": "11-30" } },
+      { "label": "Winter", "href": "winter.html", "farbe": "#7fd4ff", "zeitraum": { "von": "12-01", "bis": "02-29" } }
     ]
   },
   { "label": "Datenschutz", "href": "datenschutz.html" }

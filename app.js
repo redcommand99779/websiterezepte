@@ -35,6 +35,26 @@ function navigationFlach() {
   return navigationEintraege.flatMap(e => e.eintraege || [e]);
 }
 
+// ---------- Akzentfarbe je Seite/Kategorie ("farbe" in navigation.json) ----------
+
+function farbeGueltig(farbe) {
+  return /^#[0-9a-f]{6}$/i.test(farbe || "") ? farbe : null;
+}
+
+function akzentSetzen(farbe) {
+  const hex = farbeGueltig(farbe);
+  const stil = document.documentElement.style;
+
+  if (!hex) {
+    stil.removeProperty("--akzent");
+    stil.removeProperty("--akzent-rgb");
+    return;
+  }
+  const zahl = parseInt(hex.slice(1), 16);
+  stil.setProperty("--akzent", hex);
+  stil.setProperty("--akzent-rgb", `${zahl >> 16}, ${(zahl >> 8) & 255}, ${zahl & 255}`);
+}
+
 const MONATE_LANG = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 const MONATE_KURZ = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
@@ -204,7 +224,8 @@ function portionenAendern(schritt) {
 }
 
 function rezeptKarte(rezept) {
-  const kategorieKlasse = rezept.kategorie === "Backen" ? "backen" : "kochen";
+  const punktFarbe = farbeGueltig(navigationFlach().find(e => e.label === rezept.kategorie)?.farbe);
+  const punktStil = punktFarbe ? ` style="background: ${punktFarbe}; color: ${punktFarbe}"` : "";
   const titel = htmlEscape(rezept.titel);
   const link = rezeptLink(rezept);
   const bild = rezept.bild
@@ -223,7 +244,7 @@ function rezeptKarte(rezept) {
       <div class="karte-inhalt">
         <h2><a href="${link}">${titel}</a></h2>
         <span class="kategorie-label">
-          <span class="punkt ${kategorieKlasse}"></span>
+          <span class="punkt"${punktStil}></span>
           ${htmlEscape(rezept.kategorie)}${dauer}${schwierigkeit}
         </span>
         <div class="karte-buttons">
@@ -293,6 +314,7 @@ function rezeptDetailRendern() {
   }
 
   const kategorieEintrag = navigationFlach().find(e => e.label === rezept.kategorie);
+  akzentSetzen(kategorieEintrag?.farbe);
   const zurueck = `<a class="zurueck-link" href="${htmlEscape(kategorieEintrag?.href || "index.html")}">← ${htmlEscape(rezept.kategorie)}</a>`;
 
   if (zeitraumGesperrt(kategorieEintrag?.zeitraum)) {
@@ -333,6 +355,7 @@ function rezeptDetailRendern() {
     ${zurueck}
     <h1 class="leinwand-h1 rezept-titel">${htmlEscape(rezept.titel)}</h1>
     <div class="rezept-meta">${meta}${herzKnopf(rezept, "herz-gross")}</div>
+    ${rezept.schritte?.length ? '<button type="button" class="kochmodus-knopf" id="kochmodus-starten">▶ Kochmodus</button>' : ""}
     ${rezept.bild ? `<img class="rezept-bild" src="${htmlEscape(sichereUrl(rezept.bild))}" alt="${htmlEscape(rezept.titel)}">` : ""}
     ${rezept.zutaten?.length ? `<h2 class="rezept-abschnitt">Zutaten</h2>${regler}<ul id="zutaten-liste">${zutatenListeHtml()}</ul>` : ""}
     ${rezept.schritte?.length ? `<h2 class="rezept-abschnitt">Zubereitung</h2>${liste("ol", rezept.schritte)}` : ""}
@@ -378,8 +401,149 @@ function geradeOffenRendern() {
   container.innerHTML = `<h2 class="gerade-offen-titel">Gerade offen</h2><div class="gerade-offen-liste">${inhalt}</div>`;
 }
 
+// ---------- Kochmodus: ein Schritt pro Bildschirm, Bildschirm bleibt an ----------
+
+let wakeLock = null;
+let kochmodusOffen = false;
+
+async function bildschirmWachhalten(an) {
+  try {
+    if (an && "wakeLock" in navigator && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener("release", () => { wakeLock = null; });
+    } else if (!an && wakeLock) {
+      await wakeLock.release();
+      wakeLock = null;
+    }
+  } catch {
+    // Vom Browser abgelehnt (z. B. Energiesparmodus): der Kochmodus läuft trotzdem
+  }
+  return Boolean(wakeLock);
+}
+
+// Der Browser gibt die Sperre frei, sobald der Tab verdeckt wird; beim Zurückkommen neu anfordern
+document.addEventListener("visibilitychange", () => {
+  if (kochmodusOffen && document.visibilityState === "visible") {
+    bildschirmWachhalten(true).then(aktualisiereKochmodusHinweis);
+  }
+});
+
+function aktualisiereKochmodusHinweis(aktiv) {
+  const hinweis = document.getElementById("kochmodus-hinweis");
+  if (!hinweis) return;
+
+  hinweis.textContent = aktiv
+    ? "Bildschirm bleibt an"
+    : ("wakeLock" in navigator ? "Bildschirm konnte nicht wachgehalten werden" : "Dein Browser kann den Bildschirm nicht wachhalten");
+}
+
+function kochmodusOeffnen() {
+  if (!detailRezept?.schritte?.length || kochmodusOffen) return;
+
+  const rezept = detailRezept;
+  const seiten = [
+    {
+      titel: `Zutaten${detailPortionen ? ` für ${detailPortionen} Portionen` : ""}`,
+      html: rezept.zutaten?.length ? `<ul class="kochmodus-zutaten">${zutatenListeHtml()}</ul>` : ""
+    },
+    ...rezept.schritte.map((text, i) => ({
+      titel: `Schritt ${i + 1} von ${rezept.schritte.length}`,
+      html: `<p class="kochmodus-text">${htmlEscape(text)}</p>`
+    }))
+  ];
+  if (!seiten[0].html) seiten.shift();
+
+  let index = 0;
+  const overlay = document.createElement("div");
+  overlay.className = "kochmodus";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", `Kochmodus: ${rezept.titel}`);
+  overlay.innerHTML = `
+    <header class="kochmodus-kopf">
+      <div>
+        <strong class="kochmodus-rezept">${htmlEscape(rezept.titel)}</strong>
+        <small id="kochmodus-hinweis" role="status"></small>
+      </div>
+      <button type="button" class="kochmodus-zu" aria-label="Kochmodus schließen">✕</button>
+    </header>
+    <div class="kochmodus-fortschritt"><span></span></div>
+    <main class="kochmodus-inhalt" aria-live="polite">
+      <h2 class="kochmodus-titel"></h2>
+      <div class="kochmodus-seite"></div>
+    </main>
+    <footer class="kochmodus-fuss">
+      <button type="button" class="kochmodus-zurueck">← Zurück</button>
+      <button type="button" class="kochmodus-weiter">Weiter →</button>
+    </footer>
+  `;
+
+  const titel = overlay.querySelector(".kochmodus-titel");
+  const seite = overlay.querySelector(".kochmodus-seite");
+  const balken = overlay.querySelector(".kochmodus-fortschritt span");
+  const zurueck = overlay.querySelector(".kochmodus-zurueck");
+  const weiter = overlay.querySelector(".kochmodus-weiter");
+
+  function zeigen() {
+    titel.textContent = seiten[index].titel;
+    seite.innerHTML = seiten[index].html;
+    balken.style.width = `${((index + 1) / seiten.length) * 100}%`;
+    zurueck.disabled = index === 0;
+    weiter.textContent = index === seiten.length - 1 ? "Fertig ✓" : "Weiter →";
+    overlay.querySelector(".kochmodus-inhalt").scrollTop = 0;
+  }
+
+  function schliessen() {
+    document.removeEventListener("keydown", taste);
+    overlay.remove();
+    document.body.style.overflow = "";
+    kochmodusOffen = false;
+    bildschirmWachhalten(false);
+    document.getElementById("kochmodus-starten")?.focus();
+  }
+
+  function vor() {
+    if (index === seiten.length - 1) schliessen();
+    else { index += 1; zeigen(); }
+  }
+
+  function taste(e) {
+    if (e.key === "Escape") schliessen();
+    else if (e.key === "ArrowRight") vor();
+    else if (e.key === "ArrowLeft" && index > 0) { index -= 1; zeigen(); }
+  }
+
+  zurueck.addEventListener("click", () => { index -= 1; zeigen(); });
+  weiter.addEventListener("click", vor);
+  overlay.querySelector(".kochmodus-zu").addEventListener("click", schliessen);
+  document.addEventListener("keydown", taste);
+
+  // Wischen am Handy: nach links = weiter, nach rechts = zurück
+  let startX = null;
+  overlay.addEventListener("touchstart", e => { startX = e.touches[0].clientX; }, { passive: true });
+  overlay.addEventListener("touchend", e => {
+    if (startX === null) return;
+    const diff = e.changedTouches[0].clientX - startX;
+    startX = null;
+    if (diff < -60) vor();
+    else if (diff > 60 && index > 0) { index -= 1; zeigen(); }
+  }, { passive: true });
+
+  document.body.append(overlay);
+  document.body.style.overflow = "hidden";
+  kochmodusOffen = true;
+  zeigen();
+  weiter.focus();
+  bildschirmWachhalten(true).then(aktualisiereKochmodusHinweis);
+}
+
 function interaktionenInitialisieren() {
   document.addEventListener("click", e => {
+    if (e.target.closest("#kochmodus-starten")) {
+      kochmodusOeffnen();
+      return;
+    }
+
     const herz = e.target.closest(".herz");
     if (herz) {
       const id = herz.dataset.id;
@@ -437,7 +601,9 @@ function seitenleisteLink(eintrag, aktiveSeite) {
   const zeitraum = eintrag.zeitraum;
   const zeitraumAttribut = zeitraum ? ` data-zeitraum="${htmlEscape(zeitraum.von)}|${htmlEscape(zeitraum.bis)}"` : "";
   const hinweis = zeitraum ? `<small>${htmlEscape(zeitraumText(zeitraum, MONATE_KURZ))}</small><small class="countdown"></small>` : "";
-  return `<a class="seitenleiste-link${aktiv ? " aktiv" : ""}" href="${htmlEscape(eintrag.href)}" data-href="${htmlEscape(eintrag.href)}"${zeitraumAttribut}${aktiv ? ' aria-current="page"' : ""}>${htmlEscape(eintrag.label)}${hinweis}</a>`;
+  const farbe = farbeGueltig(eintrag.farbe);
+  const farbeAttribut = farbe ? ` style="--farbe: ${farbe}"` : "";
+  return `<a class="seitenleiste-link${aktiv ? " aktiv" : ""}${farbe ? " mit-farbe" : ""}"${farbeAttribut} href="${htmlEscape(eintrag.href)}" data-href="${htmlEscape(eintrag.href)}"${zeitraumAttribut}${aktiv ? ' aria-current="page"' : ""}>${htmlEscape(eintrag.label)}${hinweis}</a>`;
 }
 
 function seitenleisteMarkup() {
@@ -672,7 +838,9 @@ async function seiteRendern(schemaPfad) {
   const [antwort] = await Promise.all([fetch(schemaPfad), navigationLaden()]);
   const elemente = await antwort.json();
 
-  aktuellerZeitraum = navigationFlach().find(e => e.href === aktiveDatei())?.zeitraum || null;
+  const seitenEintrag = navigationFlach().find(e => e.href === aktiveDatei());
+  aktuellerZeitraum = seitenEintrag?.zeitraum || null;
+  akzentSetzen(seitenEintrag?.farbe);
 
   const leinwand = document.getElementById("leinwand");
   leinwand.innerHTML = "";
