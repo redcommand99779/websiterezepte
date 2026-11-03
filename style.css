@@ -268,6 +268,62 @@ body::after {
   box-shadow: 0 0 18px rgba(0, 240, 255, 0.55);
 }
 
+.seitenleiste-einstellungen {
+  margin-top: 1.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--linie);
+}
+
+.schrift-label {
+  margin: 0.75rem 0 0.35rem;
+  padding: 0 1rem;
+  font-size: 0.85rem;
+  opacity: 0.65;
+}
+
+.schrift-liste {
+  max-height: 13rem;
+  overflow-y: auto;
+}
+
+.schrift-knopf,
+.schrift-reset {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.3rem;
+  padding: 0.5rem 1rem;
+  font-size: 1.05rem;
+  text-align: left;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.schrift-knopf:hover,
+.schrift-reset:hover {
+  border-color: var(--linie);
+}
+
+.schrift-knopf[aria-pressed="true"] {
+  border-color: var(--text);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.35);
+}
+
+.schrift-reset {
+  margin-top: 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  opacity: 0.75;
+}
+
+.schrift-knopf:focus-visible,
+.schrift-reset:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
 .seitenleiste-link small {
   display: block;
   font-family: var(--font-body);
