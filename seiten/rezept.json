@@ -1,0 +1,4 @@
+[
+  { "id": "rezept", "typ": "rezept-detail", "x": 40, "y": 72, "breite": 800, "abstandNach": 48 },
+  { "id": "admin", "typ": "admin", "x": 40 }
+]

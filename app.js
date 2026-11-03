@@ -1,83 +1,3 @@
-function rezeptKarte(rezept) {
-  const kategorieKlasse = rezept.kategorie === "Backen" ? "backen" : "kochen";
-  const dateiname = rezept.pdf.split("/").pop();
-
-  return `
-    <article class="karte">
-      <img src="${rezept.bild}" alt="${rezept.titel}" loading="lazy">
-      <div class="karte-inhalt">
-        <h2>${rezept.titel}</h2>
-        <span class="kategorie-label">
-          <span class="punkt ${kategorieKlasse}"></span>
-          ${rezept.kategorie}
-        </span>
-        <div class="karte-buttons">
-          <a class="button" href="${rezept.pdf}" target="_blank" rel="noopener">Ansehen</a>
-          <a class="button" href="${rezept.pdf}" download="${dateiname}">Herunterladen</a>
-        </div>
-      </div>
-    </article>
-  `;
-}
-
-let alleRezepteGlobal = [];
-let aktuellerKategorieFilter = null;
-
-function gridRendern(suchbegriff) {
-  const grid = document.getElementById("rezepte-grid");
-  if (!grid) return;
-
-  if (aktuellerZeitraum && !adminAktiv() && !zeitraumVerfuegbar(aktuellerZeitraum)) {
-    grid.innerHTML = `<p class="leer-hinweis">Diese Seite ist nur vom ${htmlEscape(zeitraumText(aktuellerZeitraum, MONATE_LANG, " bis "))} verfügbar.</p>`;
-    return;
-  }
-
-  const suche = (suchbegriff || "").trim().toLowerCase();
-
-  const rezepte = alleRezepteGlobal.filter(r => {
-    const passtKategorie = !aktuellerKategorieFilter || r.kategorie === aktuellerKategorieFilter;
-    const passtSuche = !suche || r.titel.toLowerCase().includes(suche);
-    return passtKategorie && passtSuche;
-  });
-
-  grid.innerHTML = rezepte.length
-    ? rezepte.map(rezeptKarte).join("")
-    : '<p class="leer-hinweis">Noch keine Rezepte hier.</p>';
-}
-
-async function ladeUndRenderRezepte(kategorieFilter) {
-  aktuellerKategorieFilter = kategorieFilter || null;
-  const antwort = await fetch("rezepte.json");
-  alleRezepteGlobal = await antwort.json();
-  gridRendern();
-}
-
-function sucheInitialisieren() {
-  const feld = document.getElementById("suche");
-  if (!feld) return;
-
-  feld.addEventListener("input", () => gridRendern(feld.value));
-}
-
-function adminModusInitialisieren() {
-  const knopf = document.getElementById("admin-toggle");
-  if (!knopf) return;
-
-  function anwenden(aktiv) {
-    document.documentElement.toggleAttribute("data-admin", aktiv);
-    knopf.textContent = aktiv ? "🔧 Admin-Modus: AN" : "🔧 Admin-Modus";
-    knopf.setAttribute("aria-pressed", String(aktiv));
-    localStorage.setItem("adminModus", aktiv ? "1" : "0");
-    zeitraumSperrenAktualisieren();
-  }
-
-  anwenden(localStorage.getItem("adminModus") === "1");
-
-  knopf.addEventListener("click", () => {
-    anwenden(!document.documentElement.hasAttribute("data-admin"));
-  });
-}
-
 function htmlEscape(text) {
   return String(text ?? "")
     .replace(/&/g, "&amp;")
@@ -94,6 +14,8 @@ function sichereUrl(ziel) {
   return text;
 }
 
+// ---------- Navigation und Zeiträume ----------
+
 let navigationEintraege = [
   { label: "Home", href: "index.html" },
   { label: "Backen", href: "backen.html" },
@@ -107,6 +29,10 @@ async function navigationLaden() {
   } catch {
     // Ohne navigation.json bleibt die eingebaute Standardliste aktiv
   }
+}
+
+function navigationFlach() {
+  return navigationEintraege.flatMap(e => e.eintraege || [e]);
 }
 
 const MONATE_LANG = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
@@ -136,6 +62,221 @@ function zeitraumText(zeitraum, monate, trenner = " – ") {
   return `${format(zeitraum.von)}${trenner}${format(zeitraum.bis)}`;
 }
 
+// Tage bis zum nächsten Beginn des Zeitraums (nur sinnvoll, solange er nicht läuft)
+function tageBisStart(zeitraum, heute = new Date()) {
+  const [monat, tag] = zeitraum.von.split("-").map(Number);
+  const heuteTag = new Date(heute.getFullYear(), heute.getMonth(), heute.getDate());
+  let start = new Date(heute.getFullYear(), monat - 1, tag);
+  if (start <= heuteTag) start = new Date(heute.getFullYear() + 1, monat - 1, tag);
+  return Math.round((start - heuteTag) / 86400000);
+}
+
+function gesperrtText(was, zeitraum) {
+  const tage = tageBisStart(zeitraum);
+  const noch = tage === 1 ? "Noch 1 Tag." : `Noch ${tage} Tage.`;
+  return `${was} ist nur vom ${zeitraumText(zeitraum, MONATE_LANG, " bis ")} verfügbar. ${noch}`;
+}
+
+function zeitraumGesperrt(zeitraum) {
+  return Boolean(zeitraum) && !adminAktiv() && !zeitraumVerfuegbar(zeitraum);
+}
+
+// Zeitraum der aktuellen Seite (aus navigation.json); null = immer verfügbar
+let aktuellerZeitraum = null;
+
+// ---------- Rezepte ----------
+
+let alleRezepteGlobal = [];
+let rezepteGeladen = null;
+
+function rezepteLaden() {
+  rezepteGeladen ??= fetch("rezepte.json")
+    .then(antwort => antwort.json())
+    .then(daten => { alleRezepteGlobal = daten; });
+  return rezepteGeladen;
+}
+
+function rezeptId(rezept) {
+  return rezept.id || String(rezept.titel).toLowerCase()
+    .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function rezeptLink(rezept) {
+  return `rezept.html?id=${encodeURIComponent(rezeptId(rezept))}`;
+}
+
+function rezeptKarte(rezept) {
+  const kategorieKlasse = rezept.kategorie === "Backen" ? "backen" : "kochen";
+  const titel = htmlEscape(rezept.titel);
+  const link = rezeptLink(rezept);
+  const bild = rezept.bild
+    ? `<img src="${htmlEscape(sichereUrl(rezept.bild))}" alt="${titel}" loading="lazy">`
+    : '<div class="karte-bild-leer"></div>';
+  const pdf = rezept.pdf ? sichereUrl(rezept.pdf) : null;
+  const dauer = rezept.dauer ? ` · ${htmlEscape(rezept.dauer)} Min` : "";
+
+  return `
+    <article class="karte">
+      <a class="karte-bildlink" href="${link}" tabindex="-1" aria-hidden="true">${bild}</a>
+      <div class="karte-inhalt">
+        <h2><a href="${link}">${titel}</a></h2>
+        <span class="kategorie-label">
+          <span class="punkt ${kategorieKlasse}"></span>
+          ${htmlEscape(rezept.kategorie)}${dauer}
+        </span>
+        <div class="karte-buttons">
+          <a class="button" href="${link}">Ansehen</a>
+          ${pdf ? `<a class="button" href="${htmlEscape(pdf)}" download="${htmlEscape(pdf.split("/").pop())}">PDF herunterladen</a>` : ""}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+const FILTER = [
+  { key: "vegetarisch", label: "Vegetarisch", passt: r => (r.tags || []).some(t => t === "vegetarisch" || t === "vegan") },
+  { key: "vegan", label: "Vegan", passt: r => (r.tags || []).includes("vegan") },
+  { key: "schnell", label: "Schnell (bis 30 Min)", passt: r => r.dauer > 0 && r.dauer <= 30 }
+];
+const aktiveFilter = new Set();
+
+let aktuellerKategorieFilter = null;
+
+function gridRendern() {
+  const grid = document.getElementById("rezepte-grid");
+  if (!grid) return;
+
+  const filterLeiste = document.getElementById("filter-leiste");
+  const suche = (document.getElementById("suche")?.value || "").trim().toLowerCase();
+  const gesperrt = zeitraumGesperrt(aktuellerZeitraum);
+
+  const kategorieRezepte = alleRezepteGlobal.filter(r => !aktuellerKategorieFilter || r.kategorie === aktuellerKategorieFilter);
+  if (filterLeiste) filterLeiste.hidden = gesperrt || !kategorieRezepte.length;
+
+  if (gesperrt) {
+    grid.innerHTML = `<p class="leer-hinweis">${htmlEscape(gesperrtText("Diese Seite", aktuellerZeitraum))}</p>`;
+  } else {
+    const rezepte = kategorieRezepte.filter(r =>
+      (!suche || r.titel.toLowerCase().includes(suche)) &&
+      [...aktiveFilter].every(key => FILTER.find(f => f.key === key).passt(r))
+    );
+
+    if (rezepte.length) {
+      grid.innerHTML = rezepte.map(rezeptKarte).join("");
+    } else {
+      const text = kategorieRezepte.length ? "Keine Rezepte passen zu Suche und Filter." : "Noch keine Rezepte hier.";
+      grid.innerHTML = `<p class="leer-hinweis">${text}</p>`;
+    }
+  }
+
+  leinwandAnordnen();
+}
+
+function rezeptDetailRendern() {
+  const container = document.getElementById("rezept-detail");
+  if (!container) return;
+
+  const id = new URLSearchParams(location.search).get("id");
+  const rezept = alleRezepteGlobal.find(r => rezeptId(r) === id);
+
+  if (!rezept) {
+    container.innerHTML = '<p class="leer-hinweis">Dieses Rezept gibt es nicht. <a href="index.html">Zur Startseite</a></p>';
+    leinwandAnordnen();
+    return;
+  }
+
+  const kategorieEintrag = navigationFlach().find(e => e.label === rezept.kategorie);
+  const zurueck = `<a class="zurueck-link" href="${htmlEscape(kategorieEintrag?.href || "index.html")}">← ${htmlEscape(rezept.kategorie)}</a>`;
+
+  if (zeitraumGesperrt(kategorieEintrag?.zeitraum)) {
+    container.innerHTML = `${zurueck}<p class="leer-hinweis">${htmlEscape(gesperrtText("Dieses Rezept", kategorieEintrag.zeitraum))}</p>`;
+    document.title = "Rezept – Meine Rezepte";
+    leinwandAnordnen();
+    return;
+  }
+
+  const meta = [
+    rezept.kategorie,
+    rezept.dauer ? `${rezept.dauer} Min` : null,
+    rezept.portionen ? `${rezept.portionen} Portionen` : null,
+    ...(rezept.tags || []).map(t => t.charAt(0).toUpperCase() + t.slice(1))
+  ].filter(Boolean).map(t => `<span class="rezept-meta-chip">${htmlEscape(t)}</span>`).join("");
+
+  const liste = (tag, eintraege) => eintraege?.length
+    ? `<${tag}>${eintraege.map(e => `<li>${htmlEscape(e)}</li>`).join("")}</${tag}>`
+    : "";
+  const pdf = rezept.pdf ? sichereUrl(rezept.pdf) : null;
+
+  container.innerHTML = `
+    ${zurueck}
+    <h1 class="leinwand-h1 rezept-titel">${htmlEscape(rezept.titel)}</h1>
+    <div class="rezept-meta">${meta}</div>
+    ${rezept.bild ? `<img class="rezept-bild" src="${htmlEscape(sichereUrl(rezept.bild))}" alt="${htmlEscape(rezept.titel)}">` : ""}
+    ${rezept.zutaten?.length ? `<h2 class="rezept-abschnitt">Zutaten</h2>${liste("ul", rezept.zutaten)}` : ""}
+    ${rezept.schritte?.length ? `<h2 class="rezept-abschnitt">Zubereitung</h2>${liste("ol", rezept.schritte)}` : ""}
+    ${pdf ? `<a class="button rezept-pdf" href="${htmlEscape(pdf)}" download="${htmlEscape(pdf.split("/").pop())}">PDF herunterladen</a>` : ""}
+  `;
+  document.title = `${rezept.titel} – Meine Rezepte`;
+  leinwandAnordnen();
+}
+
+async function zufallsRezeptOeffnen(hinweis) {
+  try {
+    await rezepteLaden();
+  } catch {
+    hinweis.textContent = "Rezepte konnten nicht geladen werden.";
+    return;
+  }
+
+  const verfuegbar = alleRezepteGlobal.filter(r => {
+    const zeitraum = navigationFlach().find(e => e.label === r.kategorie)?.zeitraum;
+    return !zeitraumGesperrt(zeitraum);
+  });
+
+  if (!verfuegbar.length) {
+    hinweis.textContent = "Noch keine Rezepte verfügbar.";
+    return;
+  }
+  location.href = rezeptLink(verfuegbar[Math.floor(Math.random() * verfuegbar.length)]);
+}
+
+function sucheInitialisieren() {
+  document.querySelectorAll(".filter-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const key = chip.dataset.filter;
+      if (aktiveFilter.has(key)) aktiveFilter.delete(key);
+      else aktiveFilter.add(key);
+      chip.setAttribute("aria-pressed", String(aktiveFilter.has(key)));
+      gridRendern();
+    });
+  });
+
+  const feld = document.getElementById("suche");
+  if (feld) feld.addEventListener("input", gridRendern);
+}
+
+function adminModusInitialisieren() {
+  const knopf = document.getElementById("admin-toggle");
+  if (!knopf) return;
+
+  function anwenden(aktiv) {
+    document.documentElement.toggleAttribute("data-admin", aktiv);
+    knopf.textContent = aktiv ? "🔧 Admin-Modus: AN" : "🔧 Admin-Modus";
+    knopf.setAttribute("aria-pressed", String(aktiv));
+    localStorage.setItem("adminModus", aktiv ? "1" : "0");
+    zeitraumSperrenAktualisieren();
+  }
+
+  anwenden(localStorage.getItem("adminModus") === "1");
+
+  knopf.addEventListener("click", () => {
+    anwenden(!adminAktiv());
+  });
+}
+
+// ---------- Seitenleiste ----------
+
 function seitenleisteLink(eintrag, aktiveSeite) {
   const aktiv = eintrag.href === aktiveSeite;
   const zeitraum = eintrag.zeitraum;
@@ -159,13 +300,10 @@ function seitenleisteMarkup() {
   }).join("");
 }
 
-// Zeitraum der aktuellen Seite (aus navigation.json); null = immer verfügbar
-let aktuellerZeitraum = null;
-
 function seitenleisteSperrenAktualisieren() {
   document.querySelectorAll(".seitenleiste-link[data-zeitraum]").forEach(link => {
     const [von, bis] = link.dataset.zeitraum.split("|");
-    const frei = adminAktiv() || zeitraumVerfuegbar({ von, bis });
+    const frei = !zeitraumGesperrt({ von, bis });
 
     link.classList.toggle("gesperrt", !frei);
     if (frei) {
@@ -180,7 +318,8 @@ function seitenleisteSperrenAktualisieren() {
 
 function zeitraumSperrenAktualisieren() {
   seitenleisteSperrenAktualisieren();
-  gridRendern(document.getElementById("suche")?.value);
+  gridRendern();
+  rezeptDetailRendern();
 }
 
 function seitenleisteInitialisieren() {
@@ -200,9 +339,16 @@ function seitenleisteInitialisieren() {
   const leiste = document.createElement("aside");
   leiste.id = "seitenleiste";
   leiste.className = "seitenleiste";
-  leiste.innerHTML = `<nav aria-label="Hauptnavigation">${seitenleisteMarkup()}</nav>`;
+  leiste.innerHTML = `
+    <button type="button" class="seitenleiste-link seitenleiste-zufall">🎲 Zufalls-Rezept</button>
+    <p class="seitenleiste-hinweis" role="status"></p>
+    <nav aria-label="Hauptnavigation">${seitenleisteMarkup()}</nav>
+  `;
 
   document.body.append(knopf, hintergrund, leiste);
+
+  const hinweis = leiste.querySelector(".seitenleiste-hinweis");
+  leiste.querySelector(".seitenleiste-zufall").addEventListener("click", () => zufallsRezeptOeffnen(hinweis));
 
   function umschalten(offen) {
     leiste.classList.toggle("offen", offen);
@@ -220,6 +366,8 @@ function seitenleisteInitialisieren() {
     }
   });
 }
+
+// ---------- Leinwand ----------
 
 function leinwandElementFuellen(div, element) {
   if (element.typ === "text") {
@@ -261,7 +409,14 @@ function leinwandElementFuellen(div, element) {
     const sucheHtml = element.suche === false
       ? ""
       : '<input type="search" id="suche" class="suche-feld" placeholder="Rezept suchen…" aria-label="Rezept suchen">';
-    div.innerHTML = `${sucheHtml}<div class="grid" id="rezepte-grid"></div>`;
+    const filterHtml = element.filter === false
+      ? ""
+      : `<div class="filter-leiste" id="filter-leiste" role="group" aria-label="Filter" hidden>${
+          FILTER.map(f => `<button type="button" class="filter-chip" data-filter="${f.key}" aria-pressed="false">${f.label}</button>`).join("")
+        }</div>`;
+    div.innerHTML = `${sucheHtml}${filterHtml}<div class="grid" id="rezepte-grid"></div>`;
+  } else if (element.typ === "rezept-detail") {
+    div.innerHTML = '<div id="rezept-detail"></div>';
   } else if (element.typ === "admin") {
     div.innerHTML = `
       <div class="admin-bereich">
@@ -297,7 +452,7 @@ function leinwandSkalieren() {
 window.addEventListener("resize", leinwandSkalieren);
 window.addEventListener("load", leinwandSkalieren);
 
-function leinwandElementErstellen(element, y) {
+function leinwandElementErstellen(element) {
   const istSeitenende = element.typ === "seitenende";
 
   const div = document.createElement("div");
@@ -305,7 +460,6 @@ function leinwandElementErstellen(element, y) {
   div.dataset.typ = element.typ;
   div.dataset.schema = JSON.stringify(element);
   div.style.left = (istSeitenende ? 0 : (element.x || 0)) + "px";
-  div.style.top = y + "px";
 
   const breite = istSeitenende ? 1280 : element.breite;
   if (breite) div.style.width = breite + "px";
@@ -315,31 +469,23 @@ function leinwandElementErstellen(element, y) {
   return div;
 }
 
-async function seiteRendern(schemaPfad) {
-  const [antwort] = await Promise.all([fetch(schemaPfad), navigationLaden()]);
-  const elemente = await antwort.json();
+// Elemente der aktuellen Seite: { element, div }
+let leinwandEintraege = [];
 
-  const seitenEintrag = navigationEintraege
-    .flatMap(e => e.eintraege || [e])
-    .find(e => e.href === aktiveDatei());
-  aktuellerZeitraum = seitenEintrag?.zeitraum || null;
-
+// Setzt die Positionen neu (Elemente ohne y stapeln sich unter dem vorherigen) und passt die Leinwandhöhe an
+function leinwandAnordnen() {
   const leinwand = document.getElementById("leinwand");
-  leinwand.innerHTML = "";
+  if (!leinwand) return;
 
   let naechsteY = 0;
   let unterkante = 0;
   let seitenEndeY = null;
 
-  for (const element of elemente) {
+  for (const { div } of leinwandEintraege) div.classList.remove("nach-seitenende");
+
+  for (const { element, div } of leinwandEintraege) {
     const y = element.y !== undefined ? element.y : naechsteY;
-
-    const div = leinwandElementErstellen(element, y);
-    leinwand.appendChild(div);
-
-    if (element.typ === "rezept-grid") {
-      await ladeUndRenderRezepte(element.kategorie || null);
-    }
+    div.style.top = y + "px";
 
     if (element.typ === "seitenende") {
       seitenEndeY = seitenEndeY === null ? y : Math.min(seitenEndeY, y);
@@ -351,19 +497,42 @@ async function seiteRendern(schemaPfad) {
 
   if (seitenEndeY !== null) {
     leinwand.style.height = seitenEndeY + "px";
-    leinwand.querySelectorAll(":scope > .leinwand-element").forEach(div => {
+    for (const { element, div } of leinwandEintraege) {
       const oben = parseFloat(div.style.top) || 0;
-      if (div.dataset.typ !== "seitenende" && oben >= seitenEndeY) {
-        div.classList.add("nach-seitenende");
-      }
-    });
+      if (element.typ !== "seitenende" && oben >= seitenEndeY) div.classList.add("nach-seitenende");
+    }
   } else {
     leinwand.style.height = Math.max(naechsteY, unterkante + 32) + "px";
   }
+
+  leinwandSkalieren();
+}
+
+async function seiteRendern(schemaPfad) {
+  const [antwort] = await Promise.all([fetch(schemaPfad), navigationLaden()]);
+  const elemente = await antwort.json();
+
+  aktuellerZeitraum = navigationFlach().find(e => e.href === aktiveDatei())?.zeitraum || null;
+
+  const leinwand = document.getElementById("leinwand");
+  leinwand.innerHTML = "";
+
+  leinwandEintraege = elemente.map(element => {
+    const div = leinwandElementErstellen(element);
+    leinwand.appendChild(div);
+    return { element, div };
+  });
+
+  if (elemente.some(e => e.typ === "rezept-grid" || e.typ === "rezept-detail")) {
+    await rezepteLaden().catch(() => {});
+  }
+  aktuellerKategorieFilter = elemente.find(e => e.typ === "rezept-grid")?.kategorie || null;
+  gridRendern();
+  rezeptDetailRendern();
 
   seitenleisteInitialisieren();
   sucheInitialisieren();
   adminModusInitialisieren();
   seitenleisteSperrenAktualisieren();
-  leinwandSkalieren();
+  leinwandAnordnen();
 }

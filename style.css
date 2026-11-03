@@ -327,6 +327,92 @@ body::after {
   margin-top: 0.35rem;
 }
 
+.seitenleiste-zufall {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  background: transparent;
+  border-color: var(--linie);
+  text-align: left;
+  cursor: pointer;
+}
+
+.seitenleiste-zufall:hover {
+  border-color: var(--text);
+}
+
+.seitenleiste-hinweis {
+  margin: 0 0 0.75rem;
+  padding: 0 1rem;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.seitenleiste-hinweis:empty {
+  display: none;
+}
+
+.zurueck-link {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: var(--text);
+  opacity: 0.75;
+  text-decoration: none;
+}
+
+.zurueck-link:hover {
+  opacity: 1;
+}
+
+.rezept-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.rezept-meta-chip {
+  font-size: 0.95rem;
+  padding: 0.2rem 0.85rem;
+  border: 1px solid var(--linie);
+  border-radius: 999px;
+  background: var(--karte-bg);
+}
+
+.rezept-bild {
+  display: block;
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--linie);
+  border-radius: 10px;
+}
+
+.rezept-abschnitt {
+  margin: 1.5rem 0 0.75rem;
+  font-family: var(--font-headline);
+  font-weight: 600;
+  font-size: 1.4rem;
+  text-shadow: var(--headline-glow);
+}
+
+#rezept-detail ul,
+#rezept-detail ol {
+  margin: 0;
+  padding-left: 1.4rem;
+  font-size: 1.15rem;
+  line-height: 1.7;
+}
+
+#rezept-detail li {
+  margin-bottom: 0.35rem;
+}
+
+.rezept-pdf {
+  display: inline-block;
+  margin-top: 1.75rem;
+}
+
 .leer-hinweis {
   margin: 0;
   font-size: 1.15rem;
@@ -346,7 +432,7 @@ a:focus-visible {
   display: block;
   width: 100%;
   max-width: 380px;
-  margin: 0 0 2.25rem;
+  margin: 0 0 1rem;
   font-family: var(--font-body);
   font-size: 1rem;
   background: var(--karte-bg);
@@ -367,10 +453,49 @@ a:focus-visible {
   border-color: var(--kochen);
 }
 
+.filter-leiste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.filter-leiste[hidden] {
+  display: none;
+}
+
+.filter-chip {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--linie);
+  border-radius: 999px;
+  padding: 0.35rem 1rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.filter-chip:hover {
+  border-color: var(--text);
+}
+
+.filter-chip[aria-pressed="true"] {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+
+.filter-chip:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2rem;
+  margin-top: 1.25rem;
 }
 
 .ueber-uns {
@@ -413,6 +538,25 @@ a:focus-visible {
   object-fit: cover;
   display: block;
   border-bottom: 1px solid var(--linie);
+}
+
+.karte-bildlink {
+  display: block;
+}
+
+.karte-bild-leer {
+  height: 180px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--linie);
+}
+
+.karte h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.karte h2 a:hover {
+  text-shadow: var(--headline-glow);
 }
 
 .karte-inhalt {
