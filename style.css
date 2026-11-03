@@ -21,10 +21,7 @@ body {
   margin: 0;
   position: relative;
   overflow-x: hidden;
-  background:
-    repeating-linear-gradient(0deg, rgba(232, 233, 255, 0.035) 0 1px, transparent 1px 48px),
-    repeating-linear-gradient(90deg, rgba(232, 233, 255, 0.035) 0 1px, transparent 1px 48px),
-    var(--bg);
+  background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
   line-height: 1.5;
