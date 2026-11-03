@@ -405,7 +405,7 @@ function leinwandElementFuellen(div, element) {
     div.innerHTML = `
       <section class="ueber-uns">
         <h2>${htmlEscape(element.titel)}</h2>
-        <p>${htmlEscape(element.text)}</p>
+        ${String(element.text ?? "").split("\n").map(absatz => `<p>${htmlEscape(absatz)}</p>`).join("")}
       </section>
     `;
   } else if (element.typ === "rezept-grid") {
