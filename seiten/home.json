@@ -1,5 +1,6 @@
 [
-  { "id": "titel", "typ": "text", "tag": "h1", "klasse": "leinwand-h1", "text": "Meine Rezepte", "x": 40, "y": 72, "breite": 1200 },
+  { "id": "logo", "typ": "bild", "bild": "bilder/logo.jpg", "alt": "Koch & Back Rezepte", "x": 40, "y": 72, "breite": 560, "abstandNach": 32 },
+  { "id": "titel", "typ": "text", "tag": "h1", "klasse": "leinwand-h1", "text": "Meine Rezepte", "x": 40, "breite": 1200 },
   { "id": "untertitel", "typ": "text", "tag": "p", "klasse": "leinwand-p", "text": "Eine kleine Sammlung von Gerichten, die bei uns immer wieder auf den Tisch kommen.", "x": 40, "breite": 1200, "abstandNach": 48 },
   { "id": "gerade-offen", "typ": "gerade-offen", "x": 40, "breite": 1200, "abstandNach": 48 },
   { "id": "ueber-uns", "typ": "ueber-uns", "titel": "Über uns", "text": "Wir, Jonathan Goßler und Ina Grimm, sind leidenschaftliche Hobbybäcker und freuen uns, unsere liebsten Koch- und Backrezepte mit euch zu teilen.\nAuf unserer Seite findet ihr eine vielfältige Auswahl an Rezepten für jeden Geschmack und unterschiedliche Schwierigkeitsgrade – von einfachen Ideen für den Alltag bis hin zu anspruchsvolleren Kreationen.\nLasst euch inspirieren, probiert Neues aus und vor allem: Habt viel Spaß beim Kochen und Backen!", "x": 40, "breite": 800, "abstandNach": 48 },

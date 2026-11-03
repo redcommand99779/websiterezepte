@@ -721,6 +721,8 @@ function leinwandElementFuellen(div, element) {
     bild.className = "leinwand-bild";
     bild.src = element.bild;
     bild.alt = element.alt || "";
+    // Die Höhe ist erst nach dem Laden bekannt, danach muss die Leinwand neu anordnen
+    bild.addEventListener("load", leinwandAnordnen);
     div.appendChild(bild);
   } else if (element.typ === "ueber-uns") {
     div.innerHTML = `
