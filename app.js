@@ -25,6 +25,13 @@ let aktuellerKategorieFilter = null;
 
 function gridRendern(suchbegriff) {
   const grid = document.getElementById("rezepte-grid");
+  if (!grid) return;
+
+  if (aktuellerZeitraum && !adminAktiv() && !zeitraumVerfuegbar(aktuellerZeitraum)) {
+    grid.innerHTML = `<p class="leer-hinweis">Diese Seite ist nur vom ${htmlEscape(zeitraumText(aktuellerZeitraum, MONATE_LANG, " bis "))} verfügbar.</p>`;
+    return;
+  }
+
   const suche = (suchbegriff || "").trim().toLowerCase();
 
   const rezepte = alleRezepteGlobal.filter(r => {
@@ -61,6 +68,7 @@ function adminModusInitialisieren() {
     knopf.textContent = aktiv ? "🔧 Admin-Modus: AN" : "🔧 Admin-Modus";
     knopf.setAttribute("aria-pressed", String(aktiv));
     localStorage.setItem("adminModus", aktiv ? "1" : "0");
+    zeitraumSperrenAktualisieren();
   }
 
   anwenden(localStorage.getItem("adminModus") === "1");
@@ -101,24 +109,78 @@ async function navigationLaden() {
   }
 }
 
-function seitenleisteLink(eintrag, aktiveDatei) {
-  const aktiv = eintrag.href === aktiveDatei;
-  return `<a class="seitenleiste-link${aktiv ? " aktiv" : ""}" href="${htmlEscape(eintrag.href)}"${aktiv ? ' aria-current="page"' : ""}>${htmlEscape(eintrag.label)}</a>`;
+const MONATE_LANG = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+const MONATE_KURZ = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+
+function aktiveDatei() {
+  return location.pathname.split("/").pop() || "index.html";
+}
+
+function adminAktiv() {
+  return document.documentElement.hasAttribute("data-admin");
+}
+
+// Zeitraum als { von: "MM-TT", bis: "MM-TT" }, jedes Jahr gültig; von > bis geht über den Jahreswechsel
+function zeitraumVerfuegbar(zeitraum, heute = new Date()) {
+  const jetzt = String(heute.getMonth() + 1).padStart(2, "0") + "-" + String(heute.getDate()).padStart(2, "0");
+  return zeitraum.von <= zeitraum.bis
+    ? jetzt >= zeitraum.von && jetzt <= zeitraum.bis
+    : jetzt >= zeitraum.von || jetzt <= zeitraum.bis;
+}
+
+function zeitraumText(zeitraum, monate, trenner = " – ") {
+  const format = md => {
+    const [monat, tag] = md.split("-").map(Number);
+    return `${tag}. ${monate[monat - 1]}`;
+  };
+  return `${format(zeitraum.von)}${trenner}${format(zeitraum.bis)}`;
+}
+
+function seitenleisteLink(eintrag, aktiveSeite) {
+  const aktiv = eintrag.href === aktiveSeite;
+  const zeitraum = eintrag.zeitraum;
+  const zeitraumAttribut = zeitraum ? ` data-zeitraum="${htmlEscape(zeitraum.von)}|${htmlEscape(zeitraum.bis)}"` : "";
+  const hinweis = zeitraum ? `<small>${htmlEscape(zeitraumText(zeitraum, MONATE_KURZ))}</small>` : "";
+  return `<a class="seitenleiste-link${aktiv ? " aktiv" : ""}" href="${htmlEscape(eintrag.href)}" data-href="${htmlEscape(eintrag.href)}"${zeitraumAttribut}${aktiv ? ' aria-current="page"' : ""}>${htmlEscape(eintrag.label)}${hinweis}</a>`;
 }
 
 function seitenleisteMarkup() {
-  const aktiveDatei = location.pathname.split("/").pop() || "index.html";
+  const aktiveSeite = aktiveDatei();
 
   return navigationEintraege.map(eintrag => {
-    if (!Array.isArray(eintrag.eintraege)) return seitenleisteLink(eintrag, aktiveDatei);
+    if (!Array.isArray(eintrag.eintraege)) return seitenleisteLink(eintrag, aktiveSeite);
 
     return `
       <details class="seitenleiste-gruppe" open>
         <summary>${htmlEscape(eintrag.gruppe)}</summary>
-        ${eintrag.eintraege.map(e => seitenleisteLink(e, aktiveDatei)).join("")}
+        ${eintrag.eintraege.map(e => seitenleisteLink(e, aktiveSeite)).join("")}
       </details>
     `;
   }).join("");
+}
+
+// Zeitraum der aktuellen Seite (aus navigation.json); null = immer verfügbar
+let aktuellerZeitraum = null;
+
+function seitenleisteSperrenAktualisieren() {
+  document.querySelectorAll(".seitenleiste-link[data-zeitraum]").forEach(link => {
+    const [von, bis] = link.dataset.zeitraum.split("|");
+    const frei = adminAktiv() || zeitraumVerfuegbar({ von, bis });
+
+    link.classList.toggle("gesperrt", !frei);
+    if (frei) {
+      link.setAttribute("href", link.dataset.href);
+      link.removeAttribute("aria-disabled");
+    } else {
+      link.removeAttribute("href");
+      link.setAttribute("aria-disabled", "true");
+    }
+  });
+}
+
+function zeitraumSperrenAktualisieren() {
+  seitenleisteSperrenAktualisieren();
+  gridRendern(document.getElementById("suche")?.value);
 }
 
 function seitenleisteInitialisieren() {
@@ -257,6 +319,11 @@ async function seiteRendern(schemaPfad) {
   const [antwort] = await Promise.all([fetch(schemaPfad), navigationLaden()]);
   const elemente = await antwort.json();
 
+  const seitenEintrag = navigationEintraege
+    .flatMap(e => e.eintraege || [e])
+    .find(e => e.href === aktiveDatei());
+  aktuellerZeitraum = seitenEintrag?.zeitraum || null;
+
   const leinwand = document.getElementById("leinwand");
   leinwand.innerHTML = "";
 
@@ -297,5 +364,6 @@ async function seiteRendern(schemaPfad) {
   seitenleisteInitialisieren();
   sucheInitialisieren();
   adminModusInitialisieren();
+  seitenleisteSperrenAktualisieren();
   leinwandSkalieren();
 }

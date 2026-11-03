@@ -10,18 +10,18 @@
   {
     "gruppe": "Feste",
     "eintraege": [
-      { "label": "Weihnachten", "href": "weihnachten.html" },
-      { "label": "Ostern", "href": "ostern.html" },
-      { "label": "Halloween", "href": "halloween.html" }
+      { "label": "Weihnachten", "href": "weihnachten.html", "zeitraum": { "von": "11-01", "bis": "01-14" } },
+      { "label": "Ostern", "href": "ostern.html", "zeitraum": { "von": "03-01", "bis": "04-30" } },
+      { "label": "Halloween", "href": "halloween.html", "zeitraum": { "von": "10-01", "bis": "10-31" } }
     ]
   },
   {
     "gruppe": "Jahreszeiten",
     "eintraege": [
-      { "label": "Frühling", "href": "fruehling.html" },
-      { "label": "Sommer", "href": "sommer.html" },
-      { "label": "Herbst", "href": "herbst.html" },
-      { "label": "Winter", "href": "winter.html" }
+      { "label": "Frühling", "href": "fruehling.html", "zeitraum": { "von": "03-01", "bis": "05-31" } },
+      { "label": "Sommer", "href": "sommer.html", "zeitraum": { "von": "06-01", "bis": "08-31" } },
+      { "label": "Herbst", "href": "herbst.html", "zeitraum": { "von": "09-01", "bis": "11-30" } },
+      { "label": "Winter", "href": "winter.html", "zeitraum": { "von": "12-01", "bis": "02-29" } }
     ]
   }
 ]

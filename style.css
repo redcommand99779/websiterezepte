@@ -271,6 +271,25 @@ body::after {
   box-shadow: 0 0 18px rgba(0, 240, 255, 0.55);
 }
 
+.seitenleiste-link small {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.7;
+}
+
+.seitenleiste-link.gesperrt {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.seitenleiste-link.gesperrt:hover {
+  border-color: transparent;
+}
+
 .seitenleiste-gruppe {
   margin-top: 0.75rem;
 }
