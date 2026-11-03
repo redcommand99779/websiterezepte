@@ -210,8 +210,7 @@ function rezeptKarte(rezept) {
   const bild = rezept.bild
     ? `<img src="${htmlEscape(sichereUrl(rezept.bild))}" alt="${titel}" loading="lazy">`
     : '<div class="karte-bild-leer"></div>';
-  const pdf = rezept.pdf ? sichereUrl(rezept.pdf) : null;
-  const dauer = rezept.dauer ? ` · ${htmlEscape(rezept.dauer)} Min` : "";
+  const dauer =rezept.dauer ? ` · ${htmlEscape(rezept.dauer)} Min` : "";
   const stufe = schwierigkeitStufe(rezept);
   const schwierigkeit = stufe
     ? ` · <span title="Schwierigkeit: ${SCHWIERIGKEIT[stufe - 1]}" aria-label="Schwierigkeit: ${SCHWIERIGKEIT[stufe - 1]}">${sterne(stufe)}</span>`
@@ -229,7 +228,6 @@ function rezeptKarte(rezept) {
         </span>
         <div class="karte-buttons">
           <a class="button" href="${link}">Ansehen</a>
-          ${pdf ? `<a class="button" href="${htmlEscape(pdf)}" download="${htmlEscape(pdf.split("/").pop())}">PDF herunterladen</a>` : ""}
         </div>
       </div>
     </article>
@@ -331,8 +329,6 @@ function rezeptDetailRendern() {
   const liste = (tag, eintraege) => eintraege?.length
     ? `<${tag}>${eintraege.map(e => `<li>${htmlEscape(e)}</li>`).join("")}</${tag}>`
     : "";
-  const pdf = rezept.pdf ? sichereUrl(rezept.pdf) : null;
-
   container.innerHTML = `
     ${zurueck}
     <h1 class="leinwand-h1 rezept-titel">${htmlEscape(rezept.titel)}</h1>
@@ -340,9 +336,7 @@ function rezeptDetailRendern() {
     ${rezept.bild ? `<img class="rezept-bild" src="${htmlEscape(sichereUrl(rezept.bild))}" alt="${htmlEscape(rezept.titel)}">` : ""}
     ${rezept.zutaten?.length ? `<h2 class="rezept-abschnitt">Zutaten</h2>${regler}<ul id="zutaten-liste">${zutatenListeHtml()}</ul>` : ""}
     ${rezept.schritte?.length ? `<h2 class="rezept-abschnitt">Zubereitung</h2>${liste("ol", rezept.schritte)}` : ""}
-    ${rezept.quelle ? `<p class="rezept-quelle">Quelle: ${htmlEscape(rezept.quelle)}</p>` : ""}
-    ${pdf ? `<a class="button rezept-pdf" href="${htmlEscape(pdf)}" download="${htmlEscape(pdf.split("/").pop())}">PDF herunterladen</a>` : ""}
-  `;
+    ${rezept.quelle ? `<p class="rezept-quelle">Quelle: ${htmlEscape(rezept.quelle)}</p>` : ""}  `;
   document.title = `${rezept.titel} – Meine Rezepte`;
   leinwandAnordnen();
 }

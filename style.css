@@ -572,11 +572,6 @@ body::after {
   margin-bottom: 0.35rem;
 }
 
-.rezept-pdf {
-  display: inline-block;
-  margin-top: 1.75rem;
-}
-
 .leer-hinweis {
   margin: 0;
   font-size: 1.15rem;
