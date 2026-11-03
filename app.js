@@ -281,7 +281,7 @@ function seitenleisteLink(eintrag, aktiveSeite) {
   const aktiv = eintrag.href === aktiveSeite;
   const zeitraum = eintrag.zeitraum;
   const zeitraumAttribut = zeitraum ? ` data-zeitraum="${htmlEscape(zeitraum.von)}|${htmlEscape(zeitraum.bis)}"` : "";
-  const hinweis = zeitraum ? `<small>${htmlEscape(zeitraumText(zeitraum, MONATE_KURZ))}</small>` : "";
+  const hinweis = zeitraum ? `<small>${htmlEscape(zeitraumText(zeitraum, MONATE_KURZ))}</small><small class="countdown"></small>` : "";
   return `<a class="seitenleiste-link${aktiv ? " aktiv" : ""}" href="${htmlEscape(eintrag.href)}" data-href="${htmlEscape(eintrag.href)}"${zeitraumAttribut}${aktiv ? ' aria-current="page"' : ""}>${htmlEscape(eintrag.label)}${hinweis}</a>`;
 }
 
@@ -303,8 +303,11 @@ function seitenleisteMarkup() {
 function seitenleisteSperrenAktualisieren() {
   document.querySelectorAll(".seitenleiste-link[data-zeitraum]").forEach(link => {
     const [von, bis] = link.dataset.zeitraum.split("|");
-    const frei = !zeitraumGesperrt({ von, bis });
+    const zeitraum = { von, bis };
+    const frei = !zeitraumGesperrt(zeitraum);
 
+    const tage = tageBisStart(zeitraum);
+    link.querySelector(".countdown").textContent = frei ? "" : (tage === 1 ? "Noch 1 Tag" : `Noch ${tage} Tage`);
     link.classList.toggle("gesperrt", !frei);
     if (frei) {
       link.setAttribute("href", link.dataset.href);
