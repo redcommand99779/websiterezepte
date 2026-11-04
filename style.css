@@ -1019,3 +1019,15 @@ a:focus-visible {
     margin-bottom: 1.5rem;
   }
 }
+
+/* Startseite: das Logo als abgedunkelter Hintergrund, nach unten in die Seitenfarbe ausgeblendet */
+body.startseite {
+  background:
+    linear-gradient(to bottom, rgba(10, 12, 22, 0.45) 0%, rgba(10, 12, 22, 0.8) 55%, var(--bg) 100%) top center / 100% 66.7vw no-repeat,
+    url("bilder/hintergrund.jpg") top center / 100% auto no-repeat,
+    var(--bg);
+}
+
+body.startseite .leinwand-p {
+  text-shadow: 0 1px 8px var(--bg), 0 0 4px var(--bg);
+}
