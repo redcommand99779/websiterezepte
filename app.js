@@ -596,6 +596,22 @@ function adminModusInitialisieren() {
 
 // ---------- Seitenleiste ----------
 
+// Münzstand der Schwesterseite Rezepte-Spiele (gleiche Herkunft, gleicher localStorage-Schlüssel)
+function coinsLesen() {
+  try {
+    const zahl = parseInt(localStorage.getItem("rezeptecoins"), 10);
+    return zahl > 0 ? zahl : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function coinsAnzeigen() {
+  document.querySelectorAll("[data-coins]").forEach(el => { el.textContent = coinsLesen(); });
+}
+
+window.addEventListener("storage", coinsAnzeigen);
+
 function seitenleisteLink(eintrag, aktiveSeite) {
   const aktiv = eintrag.href === aktiveSeite;
   const zeitraum = eintrag.zeitraum;
@@ -664,12 +680,14 @@ function seitenleisteInitialisieren() {
   leiste.id = "seitenleiste";
   leiste.className = "seitenleiste";
   leiste.innerHTML = `
+    <a class="seitenleiste-coins" href="../rezeptegames/index.html" title="Zu den Rezepte-Spielen"><span class="coin-symbol"></span><strong data-coins>0</strong> Coins</a>
     <button type="button" class="seitenleiste-link seitenleiste-zufall">🎲 Zufalls-Rezept</button>
     <p class="seitenleiste-hinweis" role="status"></p>
     <nav aria-label="Hauptnavigation">${seitenleisteMarkup()}</nav>
   `;
 
   document.body.append(knopf, hintergrund, leiste);
+  coinsAnzeigen();
 
   const hinweis = leiste.querySelector(".seitenleiste-hinweis");
   leiste.querySelector(".seitenleiste-zufall").addEventListener("click", () => zufallsRezeptOeffnen(hinweis));

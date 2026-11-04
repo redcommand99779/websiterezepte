@@ -25,5 +25,6 @@
       { "label": "Winter", "href": "winter.html", "farbe": "#7fd4ff", "zeitraum": { "von": "12-01", "bis": "02-29" } }
     ]
   },
+  { "label": "Spiele", "href": "../rezeptegames/index.html", "farbe": "#ffd23d" },
   { "label": "Datenschutz", "href": "datenschutz.html" }
 ]
