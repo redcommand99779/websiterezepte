@@ -36,12 +36,15 @@ const GOATCOUNTER_CODE = "theredcommand";
   document.head.appendChild(skript);
 
   document.addEventListener("click", e => {
-    const ziel = e.target.closest(".seitenleiste-zufall, .filter-chip, .herz, #kochmodus-starten, #freischalten-knopf");
+    const ziel = e.target.closest(".seitenleiste-zufall, .filter-chip, .herz, #kochmodus-starten, #freischalten-knopf, #drucken-knopf");
     if (!ziel) return;
 
     if (ziel.matches(".herz")) {
       // Nur das Merken zählt, nicht das Entfernen (dieser Handler läuft vor dem Umschalten, "false" = wird jetzt Favorit)
       if (ziel.getAttribute("aria-pressed") === "false") zaehlen({ path: `favorit/${ziel.dataset.id}`, title: "Favorit", event: true });
+    } else if (ziel.matches("#drucken-knopf")) {
+      const aktion = ziel.dataset.aktion === "drucken" ? "drucken" : "druck-freischalten";
+      zaehlen({ path: `${aktion}/${ziel.dataset.id}`, title: aktion === "drucken" ? "Drucken" : "Druck freischalten", event: true });
     } else if (ziel.matches("#freischalten-knopf")) {
       zaehlen({ path: `freischalten/${ziel.dataset.label}`, title: "Freischaltung", event: true });
     } else if (ziel.matches("#kochmodus-starten")) {

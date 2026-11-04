@@ -170,6 +170,59 @@ function freischaltHinweis(eintrag) {
   return `<p class="freischalten-hinweis">🔓 Mit Coins freigeschaltet bis ${htmlEscape(zeit)} Uhr.</p>`;
 }
 
+// ---------- Coin-Vorteil: Rezept drucken (pro Rezept, dauerhaft) ----------
+
+const DRUCK_PREIS = 30;
+
+function druckFreigaben() {
+  try {
+    const liste = JSON.parse(localStorage.getItem("druckfreigaben"));
+    return Array.isArray(liste) ? liste : [];
+  } catch {
+    return [];
+  }
+}
+
+function druckFrei(rezept) {
+  return adminAktiv() || druckFreigaben().includes(rezeptId(rezept));
+}
+
+function druckFreischalten(id) {
+  const rezept = alleRezepteGlobal.find(r => rezeptId(r) === id);
+  if (!rezept || druckFrei(rezept) || !coinsAbziehen(DRUCK_PREIS)) return;
+
+  try {
+    localStorage.setItem("druckfreigaben", JSON.stringify([...druckFreigaben(), id]));
+  } catch {
+    // Speichern geht nicht: Coins zurückgeben statt sie zu verlieren
+    localStorage.setItem("rezeptecoins", String(coinsLesen() + DRUCK_PREIS));
+    coinsAnzeigen();
+    return;
+  }
+  rezeptDetailRendern();
+}
+
+// Knöpfe unter den Rezeptdaten: Kochmodus und Drucken
+function aktionenHtml(rezept) {
+  const knoepfe = [];
+  if (rezept.schritte?.length) {
+    knoepfe.push('<button type="button" class="kochmodus-knopf" id="kochmodus-starten">▶ Kochmodus</button>');
+  }
+
+  if (rezept.zutaten?.length || rezept.schritte?.length) {
+    const id = htmlEscape(rezeptId(rezept));
+    const fehlt = DRUCK_PREIS - coinsLesen();
+    if (druckFrei(rezept)) {
+      knoepfe.push(`<button type="button" class="kochmodus-knopf druck-knopf" id="drucken-knopf" data-aktion="drucken" data-id="${id}">🖨 Drucken</button>`);
+    } else if (fehlt <= 0) {
+      knoepfe.push(`<button type="button" class="kochmodus-knopf druck-knopf" id="drucken-knopf" data-aktion="freischalten" data-id="${id}">🔓 Drucken freischalten (${DRUCK_PREIS} Coins)</button>`);
+    } else {
+      knoepfe.push(`<button type="button" class="kochmodus-knopf druck-knopf" disabled title="Dir fehlen noch ${fehlt} Coins">🖨 Drucken ab ${DRUCK_PREIS} Coins</button>`);
+    }
+  }
+  return knoepfe.length ? `<div class="rezept-aktionen">${knoepfe.join("")}</div>` : "";
+}
+
 // Eintrag der aktuellen Seite aus navigation.json; ohne Zeitraum ist die Seite immer verfügbar
 let aktuellerEintrag = null;
 
@@ -425,11 +478,15 @@ function rezeptDetailRendern() {
     ${zurueck}
     <h1 class="leinwand-h1 rezept-titel">${htmlEscape(rezept.titel)}</h1>
     <div class="rezept-meta">${meta}${herzKnopf(rezept, "herz-gross")}</div>
-    ${rezept.schritte?.length ? '<button type="button" class="kochmodus-knopf" id="kochmodus-starten">▶ Kochmodus</button>' : ""}
+    ${aktionenHtml(rezept)}
     ${rezept.bild ? `<img class="rezept-bild" src="${htmlEscape(sichereUrl(rezept.bild))}" alt="${htmlEscape(rezept.titel)}">` : ""}
     ${rezept.zutaten?.length ? `<h2 class="rezept-abschnitt">Zutaten</h2>${regler}<ul id="zutaten-liste">${zutatenListeHtml()}</ul>` : ""}
     ${rezept.schritte?.length ? `<h2 class="rezept-abschnitt">Zubereitung</h2>${liste("ol", rezept.schritte)}` : ""}
-    ${rezept.quelle ? `<p class="rezept-quelle">Quelle: ${htmlEscape(rezept.quelle)}</p>` : ""}  `;
+    ${rezept.quelle ? `<p class="rezept-quelle">Quelle: ${htmlEscape(rezept.quelle)}</p>` : ""}
+    <p class="druck-hinweis">Die Druckansicht ist für dieses Rezept noch nicht freigeschaltet. Auf der Rezeptseite lässt sie sich mit Coins öffnen.</p>
+  `;
+  // Ist das Drucken nicht freigeschaltet, zeigt der Druck nur den Hinweis (siehe @media print in style.css)
+  document.documentElement.toggleAttribute("data-druck-gesperrt", !druckFrei(rezept));
   document.title = `${rezept.titel} – Meine Rezepte`;
   leinwandAnordnen();
 }
@@ -608,6 +665,13 @@ function interaktionenInitialisieren() {
   document.addEventListener("click", e => {
     if (e.target.closest("#kochmodus-starten")) {
       kochmodusOeffnen();
+      return;
+    }
+
+    const drucken = e.target.closest("#drucken-knopf");
+    if (drucken) {
+      if (drucken.dataset.aktion === "drucken") window.print();
+      else druckFreischalten(drucken.dataset.id);
       return;
     }
 

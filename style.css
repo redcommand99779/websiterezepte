@@ -1080,3 +1080,120 @@ body.startseite {
 body.startseite .leinwand-p {
   text-shadow: 0 1px 8px var(--bg), 0 0 4px var(--bg);
 }
+
+/* Knöpfe unter den Rezeptdaten: Kochmodus und Drucken */
+.rezept-aktionen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.rezept-aktionen .kochmodus-knopf {
+  margin-bottom: 0;
+}
+
+.druck-knopf {
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--akzent);
+  box-shadow: none;
+}
+
+.druck-knopf:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.druck-hinweis {
+  display: none;
+}
+
+/* Druckansicht: nur das Rezept, schwarz auf weiß. Ohne Druckfreigabe erscheint nur der Hinweis. */
+@media print {
+  @page {
+    margin: 1.5cm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  * {
+    color: #000 !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  body::before,
+  body::after,
+  .seitenleiste,
+  .seitenleiste-knopf,
+  .seitenleiste-hintergrund,
+  .kochmodus,
+  .leinwand-element[data-typ="admin"],
+  .zurueck-link,
+  .herz,
+  .rezept-aktionen,
+  .portionen-regler,
+  .filter-leiste,
+  .suche-feld {
+    display: none !important;
+  }
+
+  .leinwand-aussen {
+    max-width: none !important;
+    height: auto !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .leinwand {
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+  }
+
+  .leinwand-element {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    margin-bottom: 1rem;
+  }
+
+  .leinwand-h1 {
+    font-size: 1.8rem;
+  }
+
+  .rezept-meta-chip {
+    background: none;
+    border-color: #000;
+  }
+
+  .rezept-bild {
+    height: 220px;
+    border-color: #000;
+  }
+
+  .rezept-abschnitt {
+    font-size: 1.2rem;
+    break-after: avoid;
+  }
+
+  #rezept-detail li {
+    break-inside: avoid;
+  }
+
+  html[data-druck-gesperrt] #rezept-detail > :not(.druck-hinweis) {
+    display: none !important;
+  }
+
+  html[data-druck-gesperrt] .druck-hinweis {
+    display: block;
+    font-size: 1.1rem;
+  }
+}
