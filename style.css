@@ -308,9 +308,28 @@ body::after {
   display: none;
 }
 
+.grid > .leer-hinweis,
+.grid > .freischalten,
+.grid > .freischalten-hinweis {
+  grid-column: 1 / -1;
+}
+
+.freischalten p,
+.freischalten-hinweis {
+  margin: 0 0 1rem;
+}
+
+.freischalten-hinweis {
+  color: #ffd23d;
+}
+
+.freischalten a {
+  color: #ffd23d;
+}
+
 .seitenleiste-link.gesperrt {
   opacity: 0.55;
-  cursor: not-allowed;
+  cursor: pointer;
 }
 
 .seitenleiste-link.gesperrt:hover {

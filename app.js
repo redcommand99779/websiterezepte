@@ -97,12 +97,81 @@ function gesperrtText(was, zeitraum) {
   return `${was} ist nur vom ${zeitraumText(zeitraum, MONATE_LANG, " bis ")} verfügbar. ${noch}`;
 }
 
-function zeitraumGesperrt(zeitraum) {
-  return Boolean(zeitraum) && !adminAktiv() && !zeitraumVerfuegbar(zeitraum);
+// ---------- Coin-Vorteil: gesperrte Seite für 24 Stunden öffnen ----------
+// Nur ein Spiel: Münzstand und Freischaltungen liegen im Browser und lassen sich ändern.
+
+const FREISCHALT_PREIS = 100;
+const FREISCHALT_DAUER_MS = 24 * 60 * 60 * 1000;
+
+function freischaltungenLaden() {
+  try {
+    const liste = JSON.parse(localStorage.getItem("freischaltungen"));
+    return liste && typeof liste === "object" ? liste : {};
+  } catch {
+    return {};
+  }
 }
 
-// Zeitraum der aktuellen Seite (aus navigation.json); null = immer verfügbar
-let aktuellerZeitraum = null;
+// Ablaufzeit in Millisekunden, 0 = nicht freigeschaltet
+function freischaltungBis(label) {
+  const bis = Number(freischaltungenLaden()[label]);
+  return bis > Date.now() ? bis : 0;
+}
+
+// Ein Navigationseintrag ist gesperrt, wenn sein Zeitraum nicht läuft, kein Admin-Modus an ist und keine Coin-Freischaltung gilt
+function eintragGesperrt(eintrag) {
+  return Boolean(eintrag?.zeitraum) && !adminAktiv() && !zeitraumVerfuegbar(eintrag.zeitraum) && !freischaltungBis(eintrag.label);
+}
+
+function coinsAbziehen(menge) {
+  const stand = coinsLesen();
+  if (menge > stand) return false;
+  try {
+    localStorage.setItem("rezeptecoins", String(stand - menge));
+  } catch {
+    return false;
+  }
+  coinsAnzeigen();
+  return true;
+}
+
+function seiteFreischalten(label) {
+  const eintrag = navigationFlach().find(e => e.label === label);
+  if (!eintrag || !eintragGesperrt(eintrag) || !coinsAbziehen(FREISCHALT_PREIS)) return;
+
+  const liste = freischaltungenLaden();
+  liste[label] = Date.now() + FREISCHALT_DAUER_MS;
+  try {
+    localStorage.setItem("freischaltungen", JSON.stringify(liste));
+  } catch {
+    // Speichern geht nicht: Coins zurückgeben statt sie zu verlieren
+    localStorage.setItem("rezeptecoins", String(coinsLesen() + FREISCHALT_PREIS));
+    coinsAnzeigen();
+    return;
+  }
+  zeitraumSperrenAktualisieren();
+}
+
+function freischaltBlock(eintrag) {
+  const stand = coinsLesen();
+  const fehlt = FREISCHALT_PREIS - stand;
+  const unten = fehlt <= 0
+    ? `<button type="button" class="kochmodus-knopf" id="freischalten-knopf" data-label="${htmlEscape(eintrag.label)}">🔓 Für ${FREISCHALT_PREIS} Coins 24 Stunden öffnen</button>`
+    : `<p>Dir fehlen noch ${fehlt} Coins. <a href="../rezeptegames/index.html">Zu den Spielen</a></p>`;
+
+  return `<div class="freischalten"><p>Mit Coins kannst du ${htmlEscape(eintrag.label)} für 24 Stunden öffnen. Du hast ${stand} Coins.</p>${unten}</div>`;
+}
+
+function freischaltHinweis(eintrag) {
+  const bis = freischaltungBis(eintrag?.label);
+  if (!bis || adminAktiv() || zeitraumVerfuegbar(eintrag.zeitraum)) return "";
+
+  const zeit = new Date(bis).toLocaleString("de-DE", { weekday: "short", hour: "2-digit", minute: "2-digit" });
+  return `<p class="freischalten-hinweis">🔓 Mit Coins freigeschaltet bis ${htmlEscape(zeit)} Uhr.</p>`;
+}
+
+// Eintrag der aktuellen Seite aus navigation.json; ohne Zeitraum ist die Seite immer verfügbar
+let aktuellerEintrag = null;
 
 // ---------- Rezepte ----------
 
@@ -271,29 +340,30 @@ function gridRendern() {
 
   const filterLeiste = document.getElementById("filter-leiste");
   const suche = (document.getElementById("suche")?.value || "").trim().toLowerCase();
-  const gesperrt = zeitraumGesperrt(aktuellerZeitraum);
+  const gesperrt = eintragGesperrt(aktuellerEintrag);
 
   const favoriten = favoritenLaden();
   const kategorieRezepte = alleRezepteGlobal.filter(r =>
     (!aktuellerKategorieFilter || r.kategorie === aktuellerKategorieFilter) &&
-    (!nurFavoriten || (favoriten.includes(rezeptId(r)) && !zeitraumGesperrt(navigationFlach().find(e => e.label === r.kategorie)?.zeitraum)))
+    (!nurFavoriten || (favoriten.includes(rezeptId(r)) && !eintragGesperrt(navigationFlach().find(e => e.label === r.kategorie))))
   );
   if (filterLeiste) filterLeiste.hidden = gesperrt || !kategorieRezepte.length;
 
   if (gesperrt) {
-    grid.innerHTML = `<p class="leer-hinweis">${htmlEscape(gesperrtText("Diese Seite", aktuellerZeitraum))}</p>`;
+    grid.innerHTML = `<p class="leer-hinweis">${htmlEscape(gesperrtText("Diese Seite", aktuellerEintrag.zeitraum))}</p>${freischaltBlock(aktuellerEintrag)}`;
   } else {
     const rezepte = kategorieRezepte.filter(r =>
       (!suche || r.titel.toLowerCase().includes(suche)) &&
       [...aktiveFilter].every(key => FILTER.find(f => f.key === key).passt(r))
     );
 
+    const hinweis = freischaltHinweis(aktuellerEintrag);
     if (rezepte.length) {
-      grid.innerHTML = rezepte.map(rezeptKarte).join("");
+      grid.innerHTML = hinweis + rezepte.map(rezeptKarte).join("");
     } else {
       const leer = nurFavoriten ? "Noch keine Favoriten. Tippe bei einem Rezept auf das Herz." : "Noch keine Rezepte hier.";
       const text = kategorieRezepte.length ? "Keine Rezepte passen zu Suche und Filter." : leer;
-      grid.innerHTML = `<p class="leer-hinweis">${text}</p>`;
+      grid.innerHTML = `${hinweis}<p class="leer-hinweis">${text}</p>`;
     }
   }
 
@@ -317,8 +387,8 @@ function rezeptDetailRendern() {
   akzentSetzen(kategorieEintrag?.farbe);
   const zurueck = `<a class="zurueck-link" href="${htmlEscape(kategorieEintrag?.href || "index.html")}">← ${htmlEscape(rezept.kategorie)}</a>`;
 
-  if (zeitraumGesperrt(kategorieEintrag?.zeitraum)) {
-    container.innerHTML = `${zurueck}<p class="leer-hinweis">${htmlEscape(gesperrtText("Dieses Rezept", kategorieEintrag.zeitraum))}</p>`;
+  if (eintragGesperrt(kategorieEintrag)) {
+    container.innerHTML = `${zurueck}<p class="leer-hinweis">${htmlEscape(gesperrtText("Dieses Rezept", kategorieEintrag.zeitraum))}</p>${freischaltBlock(kategorieEintrag)}`;
     document.title = "Rezept – Meine Rezepte";
     leinwandAnordnen();
     return;
@@ -372,10 +442,7 @@ async function zufallsRezeptOeffnen(hinweis) {
     return;
   }
 
-  const verfuegbar = alleRezepteGlobal.filter(r => {
-    const zeitraum = navigationFlach().find(e => e.label === r.kategorie)?.zeitraum;
-    return !zeitraumGesperrt(zeitraum);
-  });
+  const verfuegbar = alleRezepteGlobal.filter(r => !eintragGesperrt(navigationFlach().find(e => e.label === r.kategorie)));
 
   if (!verfuegbar.length) {
     hinweis.textContent = "Noch keine Rezepte verfügbar.";
@@ -544,6 +611,12 @@ function interaktionenInitialisieren() {
       return;
     }
 
+    const freischalten = e.target.closest("#freischalten-knopf");
+    if (freischalten) {
+      seiteFreischalten(freischalten.dataset.label);
+      return;
+    }
+
     const herz = e.target.closest(".herz");
     if (herz) {
       const id = herz.dataset.id;
@@ -640,19 +713,16 @@ function seitenleisteMarkup() {
 function seitenleisteSperrenAktualisieren() {
   document.querySelectorAll(".seitenleiste-link[data-zeitraum]").forEach(link => {
     const [von, bis] = link.dataset.zeitraum.split("|");
-    const zeitraum = { von, bis };
-    const frei = !zeitraumGesperrt(zeitraum);
+    const eintrag = navigationFlach().find(e => e.href === link.dataset.href);
+    const frei = !eintragGesperrt(eintrag);
 
-    const tage = tageBisStart(zeitraum);
+    const tage = tageBisStart({ von, bis });
     link.querySelector(".countdown").textContent = frei ? "" : (tage === 1 ? "Noch 1 Tag" : `Noch ${tage} Tage`);
     link.classList.toggle("gesperrt", !frei);
-    if (frei) {
-      link.setAttribute("href", link.dataset.href);
-      link.removeAttribute("aria-disabled");
-    } else {
-      link.removeAttribute("href");
-      link.setAttribute("aria-disabled", "true");
-    }
+    // Gesperrte Links führen weiter zur Seite: dort lässt sich die Seite mit Coins öffnen
+    link.setAttribute("href", link.dataset.href);
+    if (frei) link.removeAttribute("title");
+    else link.setAttribute("title", `Gesperrt: mit ${FREISCHALT_PREIS} Coins für 24 Stunden öffnen`);
   });
 }
 
@@ -859,7 +929,7 @@ async function seiteRendern(schemaPfad) {
   const elemente = await antwort.json();
 
   const seitenEintrag = navigationFlach().find(e => e.href === aktiveDatei());
-  aktuellerZeitraum = seitenEintrag?.zeitraum || null;
+  aktuellerEintrag = seitenEintrag || null;
   akzentSetzen(seitenEintrag?.farbe);
 
   const leinwand = document.getElementById("leinwand");
