@@ -41,8 +41,12 @@ function farbeGueltig(farbe) {
   return /^#[0-9a-f]{6}$/i.test(farbe || "") ? farbe : null;
 }
 
+// Farbe der Seite/Kategorie; eine mit Coins gekaufte eigene Farbe hat Vorrang
+let basisFarbe = null;
+
 function akzentSetzen(farbe) {
-  const hex = farbeGueltig(farbe);
+  basisFarbe = farbe;
+  const hex = farbeGueltig(eigeneFarbe()) || farbeGueltig(farbe);
   const stil = document.documentElement.style;
 
   if (!hex) {
@@ -745,6 +749,107 @@ function coinsLesen() {
 
 function coinsAnzeigen() {
   document.querySelectorAll("[data-coins]").forEach(el => { el.textContent = coinsLesen(); });
+  abzeichenAnzeigen();
+}
+
+// Abzeichen nach insgesamt gesammelten Coins (die Spieleseite zählt mit, Ausgaben senken den Titel nicht).
+// Dieselbe Liste steht in rezeptegames/coins.js.
+const ABZEICHEN = [[0, "Küchenneuling"], [30, "Küchenhilfe"], [100, "Hobbykoch"], [250, "Backprofi"], [600, "Küchenchef"], [1500, "Meisterkoch"]];
+
+function coinsGesamt() {
+  try {
+    return Math.max(parseInt(localStorage.getItem("rezeptecoinsGesamt"), 10) || 0, coinsLesen());
+  } catch {
+    return coinsLesen();
+  }
+}
+
+function abzeichenAnzeigen() {
+  const gesamt = coinsGesamt();
+  const aktuell = [...ABZEICHEN].reverse().find(a => gesamt >= a[0]);
+  const naechstes = ABZEICHEN.find(a => a[0] > gesamt);
+
+  document.querySelectorAll("[data-abzeichen]").forEach(el => {
+    el.textContent = aktuell[1];
+    el.title = naechstes ? `Noch ${naechstes[0] - gesamt} Coins bis „${naechstes[1]}“` : "Höchster Titel erreicht";
+  });
+}
+
+// ---------- Coin-Vorteil: eigene Akzentfarbe ----------
+
+const FARB_PREIS = 50;
+const EIGENE_FARBEN = [
+  { name: "Gold", hex: "#ffd23d" },
+  { name: "Neongrün", hex: "#39ff14" },
+  { name: "Violett", hex: "#b84dff" },
+  { name: "Orange", hex: "#ff8a00" },
+  { name: "Magenta", hex: "#ff00e5" },
+  { name: "Eisblau", hex: "#aef0ff" }
+];
+
+function farbenFrei() {
+  try {
+    const liste = JSON.parse(localStorage.getItem("farbenfrei"));
+    return Array.isArray(liste) ? liste : [];
+  } catch {
+    return [];
+  }
+}
+
+function eigeneFarbe() {
+  try {
+    const hex = localStorage.getItem("farbewahl");
+    return farbenFrei().includes(hex) ? hex : null;
+  } catch {
+    return null;
+  }
+}
+
+function farbenMenuErstellen() {
+  const details = document.createElement("details");
+  details.className = "seitenleiste-gruppe seitenleiste-farben";
+  details.innerHTML = `<summary>Eigene Farbe</summary><div class="farb-raster"></div><p class="farb-hinweis" role="status"></p><button type="button" class="farb-reset">Standardfarben</button>`;
+  const raster = details.querySelector(".farb-raster");
+  const hinweis = details.querySelector(".farb-hinweis");
+
+  function zeichnen() {
+    const frei = farbenFrei();
+    const aktiv = eigeneFarbe();
+    raster.innerHTML = EIGENE_FARBEN.map(f => {
+      const istFrei = frei.includes(f.hex);
+      return `<button type="button" class="farb-knopf" data-hex="${f.hex}" style="--farbe: ${f.hex}" aria-pressed="${aktiv === f.hex}" title="${f.name}${istFrei ? "" : `: ${FARB_PREIS} Coins`}"><span class="farb-punkt"></span><span>${f.name}</span>${istFrei ? "" : `<small>🔒 ${FARB_PREIS}</small>`}</button>`;
+    }).join("");
+  }
+
+  details.addEventListener("click", e => {
+    const knopf = e.target.closest(".farb-knopf");
+    try {
+      if (knopf) {
+        const hex = knopf.dataset.hex;
+        if (!farbenFrei().includes(hex)) {
+          if (!coinsAbziehen(FARB_PREIS)) {
+            hinweis.textContent = `Dir fehlen noch ${FARB_PREIS - coinsLesen()} Coins.`;
+            return;
+          }
+          localStorage.setItem("farbenfrei", JSON.stringify([...farbenFrei(), hex]));
+        }
+        localStorage.setItem("farbewahl", hex);
+      } else if (e.target.closest(".farb-reset")) {
+        localStorage.removeItem("farbewahl");
+      } else {
+        return;
+      }
+    } catch {
+      // Ohne Browser-Speicher gilt die Wahl nur bis zum Neuladen
+    }
+
+    hinweis.textContent = "";
+    akzentSetzen(basisFarbe);
+    zeichnen();
+  });
+
+  zeichnen();
+  return details;
 }
 
 window.addEventListener("storage", coinsAnzeigen);
@@ -814,12 +919,13 @@ function seitenleisteInitialisieren() {
   leiste.id = "seitenleiste";
   leiste.className = "seitenleiste";
   leiste.innerHTML = `
-    <a class="seitenleiste-coins" href="../rezeptegames/index.html" title="Zu den Rezepte-Spielen"><span class="coin-symbol"></span><strong data-coins>0</strong> Coins</a>
+    <a class="seitenleiste-coins" href="../rezeptegames/index.html" title="Zu den Rezepte-Spielen"><span class="coin-symbol"></span><strong data-coins>0</strong> Coins<span class="abzeichen" data-abzeichen></span></a>
     <button type="button" class="seitenleiste-link seitenleiste-zufall">🎲 Zufalls-Rezept</button>
     <p class="seitenleiste-hinweis" role="status"></p>
     <nav aria-label="Hauptnavigation">${seitenleisteMarkup()}</nav>
   `;
 
+  leiste.append(farbenMenuErstellen());
   document.body.append(knopf, hintergrund, leiste);
   coinsAnzeigen();
 
